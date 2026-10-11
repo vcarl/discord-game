@@ -67,8 +67,7 @@ status.testedWaters.description: "Your mods gauged the mood. **+20% approval** o
 message.beginning: "A friend DMs you an invite to a small Discord server for a niche hobby you're into. It has about **{{server.members}} members**."
 message.acceptInvite: Click the invite.
 message.ignoreInvite: Leave it on read.
-message.joinedServer: "You joined! A bot greets you with a welcome message nobody reads. You pick a color role and post a cautious wave emoji."
-message.goalNotice: "Make yourself known, earn **vanity roles** and **personalized emoji**, get modded, and maybe one day become admin. Keep your **vibes** up."
+message.joinedServer: "You joined! A bot posts a welcome message nobody reads. Make yourself known, earn **vanity roles** and **personalized emoji**, get modded, and maybe one day become admin. Keep your **vibes** up."
 message.ignoredInvite: "You never joined. You spent those years doing other things. Possibly better things. **You win?**"
 message.hi: Hi!
 message.ok: Ok.
@@ -132,16 +131,13 @@ message.declinedMod: They understand. The offer might come again.
 message.adminOffer: "The owner calls you in voice: 'I'm stepping back. I want you to take over as **admin**.'"
 message.acceptAdmin: Accept. It's your server now.
 message.declineAdmin: "Decline. You're happy as a mod."
-message.becameAdmin: "You're the **admin**. Four of the old mods stay on to help you."
-message.adminNotice: "Grow the server to **100,000 members**. Being admin costs **5 vibes a week**; each **mod** gives back 1. Keep their morale up or they'll quit."
+message.becameAdmin: "You're the **admin**. Four of the old mods stay on to help. Grow the server to **100,000 members**. Being admin costs **5 vibes a week**; each **mod** gives back 1. Keep their morale up or they'll quit."
 message.declinedAdmin: The owner sighs and says they'll ask again in a few months.
 
 # Mod-phase drama
-message.modDrama: "Drama in #general: someone's furious about a ban another mod made. Everyone is watching."
 message.backTheMods: Back the other mod.
 message.callItOut: Admit the ban was harsh.
 message.logOff: Log off and let it blow over.
-message.backedTheMods: The team appreciates it. The community grumbles.
 message.calledOutWell: People respect your honesty. Even the other mod comes around.
 message.calledOutBadly: The other mods feel thrown under the bus. Awkward mod chat.
 message.loggedOff: When you come back, it's been memed into oblivion.
@@ -150,12 +146,25 @@ message.loggedOff: When you come back, it's been memed into oblivion.
 message.modQuit1: "A mod posted 'it's been a good run' in mod chat and left. **-1 mod.**"
 message.modQuit2: "A mod stopped showing up. Their status has said 'busy' for a month. **-1 mod.**"
 message.modQuit3: "A mod quit after a bad week of reports. **-1 mod.**"
-message.adminModDrama: "Two of your mods are fighting in mod chat. It's spilling into public channels."
+message.modDramaRight1: "Drama in #general: someone's furious about a ban another mod made. You check the logs: they'd been warned three times and kept spamming slurs."
+message.modDramaRight2: "Drama in #general over a ban another mod made. The banned user is posting screenshots, but they cropped out the part where they doxxed someone."
+message.modDramaWrong1: "Drama in #general over a ban another mod made. You check the logs: the user made one mildly rude joke and got permabanned with no warning."
+message.modDramaWrong2: "Drama in #general over a ban another mod made. It turns out the mod and the banned user had beef in another server."
+message.backedRightMod: "The logs back you up. People drop it once they see the full story."
+message.backedWrongMod: "People saw the logs too. Backing that ban made the mod team look like a clique."
+message.adminDramaAtFault1: "Two of your mods are fighting in mod chat. One has been quietly undoing the other's actions for weeks and badmouthing them in DMs."
+message.adminDramaAtFault2: "Two of your mods are fighting in mod chat. One of them keeps banning people who disagree with them, and the other finally called it out."
+message.adminDramaMisunderstanding1: "Two of your mods are fighting in mod chat. It looks like they both handled the same report differently and each thinks the other undermined them."
+message.adminDramaMisunderstanding2: "Two of your mods are fighting in mod chat over a rule that's honestly worded pretty vaguely."
+message.mediatedBadActor: "You spent hours trying to make peace, but one of them was never acting in good faith. The team is frustrated you didn't act."
+message.removedModUnfairly: "The rest of the team thinks that was unfair. It was a misunderstanding, and now everyone's worried they're next. **-1 mod.**"
+message.watersKilled1: "Your mods floated it quietly. The reaction was brutal. You scrap the proposal before it ever goes public."
+message.watersKilled2: "Your mods report back: nobody wants this. Better to find out now than in #announcements. **Proposal scrapped.**"
 message.mediate: Mediate it yourself.
 message.removeMod: Remove one of them.
 message.ignoreDrama: Ignore it.
 message.mediated: "Two hours in voice later, they've made up. You need a nap."
-message.removedMod: "Tense, but the rest of the team is relieved. **-1 mod.**"
+message.removedMod: "Tense, but the rest of the team is relieved they're gone. **-1 mod.**"
 message.ignoredDrama: The fighting dies down eventually. Everyone noticed you did nothing.
 message.regularEmerges: "A **regular** has emerged: someone who's always around and always helpful."
 
@@ -210,7 +219,7 @@ message.draft: Draft a proposal.
 message.drafted: "You wrote it up with a pros and cons list. **+1 draft proposal.**"
 message.draftFailed: The more you wrote, the worse it sounded. Scrapped.
 message.testWaters: Have your mods test the waters.
-message.testedWaters: "Your mods quietly floated the idea in a few channels. You have a better sense of how it'll land."
+message.testedWaters: "Your mods floated it quietly and people seem into it. **+20% approval** when you announce."
 message.announce: Announce a proposal.
 message.announced: "You hit send on the @everyone ping. No going back now."
 message.revise: Revise a proposal after the backlash.

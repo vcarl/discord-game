@@ -53,10 +53,13 @@ const strategies = {
     const vibes = v('player.vibes');
     const prefs = [
       'message.acceptInvite', 'message.acceptMod', 'message.acceptAdmin',
-      'message.passReins', 'message.takeBreak', 'message.mediate',
-      'message.logOff', 'message.letItGo',
+      'message.passReins', 'message.takeBreak', 'message.letItGo',
     ];
-    let pick = first(...prefs);
+    let pick = null;
+    if (avail.has('message.backTheMods')) pick = first(v('drama.modRight') === 1 ? 'message.backTheMods' : 'message.callItOut');
+    else if (avail.has('message.removeMod')) pick = first(v('drama.oneAtFault') === 1 ? 'message.removeMod' : 'message.mediate');
+    if (pick !== null) return pick;
+    pick = first(...prefs);
     if (pick !== null) return pick;
     if (vibes >= 15 && has('adminRole') && items('mod') < 3) pick = first('message.recruit');
     if (pick !== null) return pick;
@@ -70,7 +73,7 @@ const strategies = {
     if (has('adminRole')) {
       const order = ['message.banRaiders'];
       if (items('mod') < 7) order.push('message.recruit');
-      order.push('message.revise', 'message.testWaters', 'message.announce',
+      order.push('message.revise', 'message.announce',
                  'message.draft', 'message.listen');
       pick = first(...order);
     } else {
