@@ -54,7 +54,7 @@ const strategies = {
     const prefs = [
       'message.acceptInvite', 'message.acceptMod', 'message.acceptAdmin',
       'message.passReins', 'message.takeBreak', 'message.mediate',
-      'message.logOff',
+      'message.logOff', 'message.letItGo',
     ];
     let pick = first(...prefs);
     if (pick !== null) return pick;
@@ -97,7 +97,7 @@ class HeadlessProxy {
       process.stderr.write(`w${g('elapsedWeek')} members=${g('server.members')} vibes=${g('player.vibes')} mods=${this.engine.inventory.count('mod')} morale=${g('mod.morale')} | ${choices.map(c => c[0].replace('message.', '')).join(',')} -> ${chosen ? chosen[0].replace('message.', '') : idx}\n`);
     }
     this.log.push(`> ${chosen ? chosen[0] : idx}`);
-    if (chosen && chosen[0] === 'message.hotTake') {
+    if (chosen && (chosen[0] === 'message.hotTake' || chosen[0] === 'message.hotTakeReply')) {
       const st = this.engine.statusTable;
       const role = st.count('adminRole') > 0 ? 'admin' : st.count('modTitle') > 0 ? 'mod' : 'member';
       this.hotTakes.push(role);

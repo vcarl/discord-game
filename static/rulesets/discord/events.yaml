@@ -23,6 +23,7 @@
       player.lurks: 0
       player.strikes: 0
       player.usedJoke: 0
+      rule.provokeChance: 0.01
       server.peakMembers: 0
       player.weekSkipped: 0
       player.modSince: -1
@@ -472,6 +473,37 @@
         - id: UpdateVariable
           variable: community.trust
           value: community.trust - 2
+
+- id: MemberProvoked
+  trigger: WeekBegin
+  probability: rule.provokeChance
+  conditions:
+  - id: Expression
+    expression: elapsedWeek >= 3 && !hasStatus('modTitle') && !hasStatus('adminRole') && !hasStatus('drama')
+  actions:
+  - id: DisplayChoices
+    message: message.provoked
+    choices:
+    - message: message.hotTakeReply
+      actions:
+      - id: DisplayMessage
+        message: message.hotTakeReplied
+        confirm: message.worthIt
+      - id: UpdateVariables
+        updates:
+          player.vibes: player.vibes + 8
+          community.trust: community.trust - 1
+      - id: SetStatus
+        statusId: drama
+        on: true
+    - message: message.letItGo
+      actions:
+      - id: DisplayMessage
+        message: message.letItWent
+        confirm: message.ok
+      - id: UpdateVariable
+        variable: player.vibes
+        value: player.vibes - 2
 
 # ---------------------------------------------------------------------------
 # Mod-phase drama

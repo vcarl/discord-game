@@ -220,6 +220,11 @@ message.recruited: "They said yes! **+1 mod.**"
 message.recruitDeclined: "They said no. They're just here for the memes."
 message.modYourself: Pick up the mod work yourself.
 message.moddedYourself: "You handled the reports so the mods could rest. **Morale up**, your vibes down."
+message.provoked: "Someone in #general just posted a take so wrong it's making your eye twitch."
+message.hotTakeReply: Fire back with a hot take.
+message.letItGo: Let it go.
+message.hotTakeReplied: "You typed for twenty minutes and hit send. It felt **amazing**. The thread is exploding."
+message.letItWent: "You closed the app. It bugs you for the rest of the day."
 message.hotTake: Post a hot take. (You're cranky enough.)
 message.hotTake1: "You posted a 12-paragraph rant about how the server has gone downhill. It felt **amazing**."
 message.hotTake2: "You subtweeted a mod in #general. Everyone knows who it's about."
