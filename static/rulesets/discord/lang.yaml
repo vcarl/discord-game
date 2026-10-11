@@ -18,7 +18,7 @@ ui.moraleMeter: Mod morale {{mod.morale}}
 ui.timeMeter: Year {{year}} Week {{week}}
 
 item.inJoke: In-Joke
-item.inJoke.description: "You finally get one of the server's in-jokes. Your next post or emoji entry uses it and is **more likely to land**."
+item.inJoke.description: "You finally get one of the server's in-jokes. Your next post or emoji entry uses it and is **more likely to land**. While you have one, your posts and answers are **more likely to get pinned**."
 item.goodPost: Good Post
 item.goodPost.description: A post that got some reactions. Polish it into a banger and it might get pinned.
 item.pinnedMessage: Pinned Message
@@ -194,6 +194,7 @@ message.emojiWon: "Your emoji won! It's now a server emoji forever. **+1 persona
 message.emojiLost: Your emoji lost to a cat picture. It's always a cat picture.
 message.helpNewbie: "Help a newbie in #help."
 message.helpedNewbie1: You answered a question that's been asked 50 times. They're grateful anyway.
+message.helpPinned: "Your answer was so good a mod **pinned** it for the next person who asks."
 message.helpedNewbie2: You walked someone through setup. They called you a legend.
 message.helpVampire: "This one asked 30 follow-up questions and then DMed you at 3am."
 message.clearReports: Clear the report queue.
@@ -244,6 +245,7 @@ message.voiceChat2: Someone screen-shared a terrible movie. Best night all month
 message.voiceChat3: You played games until 2am. Worth it.
 message.voiceRegular: "You met someone great in voice. They're around every night now. **+1 regular.**"
 message.voiceRole: "Someone made a role just for your voice chat crew. **+1 vanity role.**"
+message.voiceInJoke: "Someone made a joke in voice that's going to be quoted forever. **+1 in-joke.**"
 message.touchGrass: Touch grass.
 message.touchedGrass1: You went outside. The sun is really bright. **Vibes restored.**
 message.touchedGrass2: "You had a whole weekend without checking Discord once. **Vibes restored.**"
