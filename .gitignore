@@ -3,3 +3,5 @@ build
 node_modules
 .vscode
 _*
+sim/build
+sim/*.json

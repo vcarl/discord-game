@@ -1,0 +1,53 @@
+---
+status:
+  - id: newcomer
+    duration: 8
+    effects:
+    - attributeModifiers:
+      - target: player.vibesBoost
+        type: Absolute
+        amount: 1
+  - id: emojiContest
+    duration: 4
+  - id: serverBoosted
+    duration: 12
+    effects:
+    - attributeModifiers:
+      - target: server.growthBoost
+        type: Absolute
+        amount: 0.005
+  - id: burnout
+    duration: Infinity
+    effects:
+    - attributeModifiers:
+      - target: player.vibesBoost
+        type: Absolute
+        amount: -5
+  - id: modTitle
+    duration: Infinity
+    effects:
+    - attributeModifiers:
+      - target: player.vibesBoost
+        type: Absolute
+        amount: -1
+  - id: adminRole
+    duration: Infinity
+    effects:
+    - attributeModifiers:
+      - target: player.vibesBoost
+        type: Absolute
+        amount: -5
+  - id: raid
+    duration: 4
+    effects:
+    - attributeModifiers:
+      - target: player.vibesBoost
+        type: Absolute
+        amount: -2
+  - id: testedWaters
+    duration: 4
+    effects:
+    - attributeModifiers:
+      - target: player.approvalBoost
+        type: Absolute
+        amount: 0.2

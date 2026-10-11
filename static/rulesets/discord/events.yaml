@@ -1,0 +1,1001 @@
+---
+# ===========================================================================
+# Discord Simulator ruleset
+# One tick = one week. Arc: newcomer -> mod -> admin -> 100,000 members.
+# ===========================================================================
+- id: Init
+  trigger: Initialization
+  once: true
+  actions:
+  - id: UpdateVariableLimits
+    updates:
+      player.vibes: [0, 100]
+      mod.morale: [0, 100]
+      community.trust: [-50, 100]
+      server.members: [0, 1000000000]
+  - id: UpdateVariables
+    updates:
+      elapsedWeek: 0
+      week: 1
+      year: 1
+      player.vibes: 60
+      player.burnout: 0
+      player.lurks: 0
+      player.weekSkipped: 0
+      player.modSince: -1
+      player.adminSince: -1
+      player.lastModOffer: -100
+      player.lastAdminOffer: -100
+      community.trust: 0
+      server.members: 800 + randi(400)
+      mod.morale: 0
+- id: GameTick
+  trigger: Tick
+  actions:
+  - id: UpdateVariables
+    updates:
+      elapsedWeek: elapsedWeek + 1
+      week: ((elapsedWeek - 1) % 52) + 1
+      year: floor((elapsedWeek - 1) / 52) + 1
+  - id: Switch
+    branches:
+    - condition: week === 1 && year > 1
+      actions:
+      - id: TriggerEvents
+        triggers:
+        - id: YearBegin
+          priority: 1
+  - id: TriggerEvents
+    triggers:
+    - id: WeekBegin
+
+# ---------------------------------------------------------------------------
+# Opening
+# ---------------------------------------------------------------------------
+- id: TheBeginning
+  trigger: WeekBegin
+  once: true
+  actions:
+  - id: DisplayChoices
+    message: message.beginning
+    choices:
+    - message: message.acceptInvite
+      actions:
+      - id: DisplayMessage
+        message: message.joinedServer
+        confirm: message.hi
+      - id: DisplayMessage
+        message: message.goalNotice
+        confirm: message.ok
+      - id: SetStatus
+        statusId: newcomer
+        on: true
+    - message: message.ignoreInvite
+      actions:
+      - id: EndGame
+        message: message.ignoredInvite
+        confirm: message.restartNewTimeline
+        winning: true
+        endingType: neverJoined
+
+# ---------------------------------------------------------------------------
+# Weekly bookkeeping
+# ---------------------------------------------------------------------------
+- id: CommonUpdates
+  trigger: WeekBegin
+  actions:
+  - id: UpdateVariables
+    updates:
+      player.vibes: player.vibes + getAttributeValue('player.vibesBoost') + itemCount('mod') - hasStatus('adminRole') * floor(server.members / 25000)
+      player.weekSkipped: 0
+      # Organic growth. Before admin, the server grows on its own. As admin,
+      # growth comes from your mods (scaled by morale) and adopted changes.
+      server.members: "server.members + floor(server.members * ((hasStatus('adminRole') ? 0.004 + 0.003 * min(itemCount('mod'), 8) * mod.morale / 100 : 0.012) + getAttributeValue('server.growthBoost') - hasStatus('raid') * 0.03 - itemCount('backlash') * 0.01))"
+  - id: Switch
+    branches:
+    - condition: hasStatus('adminRole') && itemCount('mod') > 0
+      actions:
+      - id: UpdateVariable
+        variable: mod.morale
+        value: mod.morale - 2 - floor(server.members / (8000 * max(itemCount('mod'), 1)))
+
+# ---------------------------------------------------------------------------
+# Endings. Losses are checked before the win.
+# ---------------------------------------------------------------------------
+- id: BurnedOut
+  trigger: WeekBegin
+  conditions:
+  - id: Expression
+    expression: player.vibes <= 0
+  actions:
+  - id: Switch
+    branches:
+    - condition: hasStatus('adminRole')
+      actions:
+      - id: EndGame
+        message: message.burnedOutAdmin
+        confirm: message.restart
+        winning: false
+        endingType: burnedOutAdmin
+    - condition: hasStatus('modTitle')
+      actions:
+      - id: EndGame
+        message: message.burnedOutMod
+        confirm: message.restart
+        winning: false
+        endingType: burnedOutMod
+    - condition: 1
+      actions:
+      - id: EndGame
+        message: message.burnedOutMember
+        confirm: message.restart
+        winning: false
+        endingType: burnedOutMember
+- id: DeadServer
+  trigger: WeekBegin
+  conditions:
+  - id: Expression
+    expression: hasStatus('adminRole') && server.members < 50
+  actions:
+  - id: EndGame
+    message: message.deadServer
+    confirm: message.restart
+    winning: false
+    endingType: deadServer
+- id: HundredK
+  trigger: WeekBegin
+  once: true
+  conditions:
+  - id: Expression
+    expression: server.members >= 100000
+  actions:
+  - id: DisplayChoices
+    message: message.hundredK
+    choices:
+    - message: message.business
+      actions:
+      - id: EndGame
+        message: message.endingBusiness
+        confirm: message.restartNewTimeline
+        winning: true
+        endingType: business
+        fx: confetti
+    - message: message.passReins
+      actions:
+      - id: EndGame
+        message: message.endingReins
+        confirm: message.restartNewTimeline
+        winning: true
+        endingType: passedReins
+        fx: confetti
+
+# ---------------------------------------------------------------------------
+# Yearly
+# ---------------------------------------------------------------------------
+- id: ServerAnniversary
+  trigger: YearBegin
+  actions:
+  - id: DisplayMessage
+    message: message.anniversary
+    confirm: message.party
+  - id: UpdateVariable
+    variable: player.vibes
+    value: player.vibes + 5
+
+# ---------------------------------------------------------------------------
+# Burnout (the old exhaustion system)
+# ---------------------------------------------------------------------------
+- id: Burnout
+  trigger: WeekBegin
+  probability: 0.6
+  conditions:
+  - id: Expression
+    expression: "!hasStatus('burnout') && player.burnout >= 15"
+  actions:
+  - id: DisplayMessage
+    message: message.burnout
+    confirm: message.sucks
+  - id: SetStatus
+    statusId: burnout
+    on: true
+- id: BurnoutBreak
+  trigger: WeekBegin
+  probability: 0.4
+  conditions:
+  - id: Expression
+    expression: hasStatus('burnout')
+  actions:
+  - id: DisplayChoices
+    message: message.burnoutBreak
+    choices:
+    - message: message.takeBreak
+      actions:
+      - id: DisplayMessage
+        message: message.recoveredAfterBreak
+        confirm: message.great
+      - id: UpdateVariables
+        updates:
+          player.burnout: 0
+          player.weekSkipped: 1
+          player.vibes: player.vibes + 8
+      - id: SetStatus
+        statusId: burnout
+        on: false
+    - message: message.noBreak
+      actions:
+      - id: DisplayMessage
+        message: message.burnoutIgnored
+        confirm: message.ok
+
+# ---------------------------------------------------------------------------
+# Server-wide happenings
+# ---------------------------------------------------------------------------
+- id: EmojiContest
+  trigger: WeekBegin
+  probability: 0.06
+  conditions:
+  - id: Expression
+    expression: elapsedWeek >= 3 && !hasStatus('emojiContest') && !hasStatus('adminRole')
+  actions:
+  - id: DisplayMessage
+    message: message.emojiContest
+    confirm: message.cool
+  - id: SetStatus
+    statusId: emojiContest
+    on: true
+- id: ServerBoost
+  trigger: WeekBegin
+  probability: 0.03
+  conditions:
+  - id: Expression
+    expression: elapsedWeek >= 4 && !hasStatus('serverBoosted')
+  actions:
+  - id: SetStatus
+    statusId: serverBoosted
+    on: true
+  - id: Switch
+    branches:
+    - condition: community.trust >= 5 && !hasStatus('adminRole')
+      actions:
+      - id: DisplayMessage
+        message: message.serverBoostRole
+        confirm: message.cool
+      - id: GiveItem
+        itemId: vanityRole
+        amount: 1
+    - condition: 1
+      actions:
+      - id: DisplayMessage
+        message: message.serverBoost
+        confirm: message.cool
+- id: LevelUp10
+  trigger: WeekBegin
+  once: true
+  conditions:
+  - id: Expression
+    expression: community.trust >= 10
+  actions:
+  - id: DisplayMessage
+    message: message.levelUp10
+    confirm: message.great
+  - id: GiveItem
+    itemId: vanityRole
+    amount: 1
+- id: LevelUp30
+  trigger: WeekBegin
+  once: true
+  conditions:
+  - id: Expression
+    expression: community.trust >= 30
+  actions:
+  - id: DisplayMessage
+    message: message.levelUp30
+    confirm: message.great
+  - id: GiveItem
+    itemId: vanityRole
+    amount: 1
+- id: Raid
+  trigger: WeekBegin
+  probability: 0.04 + server.members / 1000000
+  conditions:
+  - id: Expression
+    expression: (hasStatus('modTitle') || hasStatus('adminRole')) && !hasStatus('raid')
+  actions:
+  - id: DisplayMessage
+    message: message.raid
+    confirm: message.ugh
+  - id: SetStatus
+    statusId: raid
+    on: true
+- id: RaidHandledByMods
+  trigger: WeekBegin
+  probability: min(0.9, 0.25 * itemCount('mod') * mod.morale / 100)
+  conditions:
+  - id: Expression
+    expression: hasStatus('raid') && hasStatus('adminRole') && itemCount('mod') > 0
+  actions:
+  - id: DisplayMessage
+    message: message.modsHandledRaid
+    confirm: message.great
+  - id: SetStatus
+    statusId: raid
+    on: false
+  - id: UpdateVariable
+    variable: mod.morale
+    value: mod.morale - 5
+
+# ---------------------------------------------------------------------------
+# Promotions
+# ---------------------------------------------------------------------------
+- id: ModOffer
+  trigger: WeekBegin
+  conditions:
+  - id: Expression
+    expression: "!hasStatus('modTitle') && !hasStatus('adminRole') && elapsedWeek >= 8 && elapsedWeek - player.lastModOffer >= 12 && itemCount('pinnedMessage') >= 1 && community.trust >= 15 && itemCount('vanityRole') + itemCount('customEmoji') >= 2"
+  actions:
+  - id: DisplayChoices
+    message: message.modOffer
+    choices:
+    - message: message.acceptMod
+      actions:
+      - id: DisplayMessage
+        message: message.becameMod
+        confirm: message.great
+      - id: SetStatus
+        statusId: modTitle
+        on: true
+      - id: UpdateVariable
+        variable: player.modSince
+        value: elapsedWeek
+    - message: message.declineMod
+      actions:
+      - id: DisplayMessage
+        message: message.declinedMod
+        confirm: message.ok
+      - id: UpdateVariables
+        updates:
+          player.lastModOffer: elapsedWeek
+          player.vibes: player.vibes + 5
+- id: AdminOffer
+  trigger: WeekBegin
+  conditions:
+  - id: Expression
+    expression: hasStatus('modTitle') && elapsedWeek - player.modSince >= 12 && elapsedWeek - player.lastAdminOffer >= 12 && community.trust >= 35
+  actions:
+  - id: DisplayChoices
+    message: message.adminOffer
+    choices:
+    - message: message.acceptAdmin
+      actions:
+      - id: DisplayMessage
+        message: message.becameAdmin
+        confirm: message.gulp
+      - id: DisplayMessage
+        message: message.adminNotice
+        confirm: message.ok
+      - id: SetStatus
+        statusId: modTitle
+        on: false
+      - id: SetStatus
+        statusId: adminRole
+        on: true
+      - id: SetStatus
+        statusId: emojiContest
+        on: false
+      - id: GiveItem
+        itemId: mod
+        amount: 3
+      - id: UpdateVariables
+        updates:
+          mod.morale: 70
+          player.adminSince: elapsedWeek
+    - message: message.declineAdmin
+      actions:
+      - id: DisplayMessage
+        message: message.declinedAdmin
+        confirm: message.ok
+      - id: UpdateVariables
+        updates:
+          player.lastAdminOffer: elapsedWeek
+          player.vibes: player.vibes + 5
+
+# ---------------------------------------------------------------------------
+# Mod-phase drama
+# ---------------------------------------------------------------------------
+- id: ModDrama
+  trigger: WeekBegin
+  probability: 0.06
+  conditions:
+  - id: Expression
+    expression: hasStatus('modTitle')
+  actions:
+  - id: DisplayChoices
+    message: message.modDrama
+    choices:
+    - message: message.backTheMods
+      actions:
+      - id: DisplayMessage
+        message: message.backedTheMods
+        confirm: message.ok
+      - id: UpdateVariables
+        updates:
+          community.trust: community.trust - 2
+          player.vibes: player.vibes - 3
+    - message: message.callItOut
+      actions:
+      - id: CoinFlip
+        probability: 0.5
+        success:
+        - id: DisplayMessage
+          message: message.calledOutWell
+          confirm: message.great
+        - id: UpdateVariable
+          variable: community.trust
+          value: community.trust + 6
+        fail:
+        - id: DisplayMessage
+          message: message.calledOutBadly
+          confirm: message.oops
+        - id: UpdateVariables
+          updates:
+            community.trust: community.trust - 6
+            player.vibes: player.vibes - 5
+    - message: message.logOff
+      actions:
+      - id: DisplayMessage
+        message: message.loggedOff
+        confirm: message.ok
+      - id: UpdateVariables
+        updates:
+          community.trust: community.trust - 1
+          player.vibes: player.vibes + 2
+
+# ---------------------------------------------------------------------------
+# Admin phase: managing your mods
+# ---------------------------------------------------------------------------
+- id: ModQuits
+  trigger: WeekBegin
+  probability: (100 - mod.morale) / 300
+  conditions:
+  - id: Expression
+    expression: hasStatus('adminRole') && itemCount('mod') > 0
+  actions:
+  - id: DisplayRandomMessage
+    messages:
+    - message.modQuit1
+    - message.modQuit2
+    - message.modQuit3
+    confirm: message.sucks
+  - id: UpdateItemAmounts
+    updates:
+      mod: -1
+  - id: UpdateVariable
+    variable: player.vibes
+    value: player.vibes - 3
+- id: AdminModDrama
+  trigger: WeekBegin
+  probability: 0.01 * itemCount('mod')
+  conditions:
+  - id: Expression
+    expression: hasStatus('adminRole') && itemCount('mod') >= 2
+  actions:
+  - id: DisplayChoices
+    message: message.adminModDrama
+    choices:
+    - message: message.mediate
+      actions:
+      - id: DisplayMessage
+        message: message.mediated
+        confirm: message.phew
+      - id: UpdateVariables
+        updates:
+          player.vibes: player.vibes - 6
+          mod.morale: mod.morale + 5
+    - message: message.removeMod
+      actions:
+      - id: DisplayMessage
+        message: message.removedMod
+        confirm: message.ok
+      - id: UpdateItemAmounts
+        updates:
+          mod: -1
+      - id: UpdateVariable
+        variable: mod.morale
+        value: mod.morale + 10
+    - message: message.ignoreDrama
+      actions:
+      - id: DisplayMessage
+        message: message.ignoredDrama
+        confirm: message.ok
+      - id: UpdateVariables
+        updates:
+          mod.morale: mod.morale - 15
+          community.trust: community.trust - 3
+- id: RegularEmerges
+  trigger: WeekBegin
+  probability: min(0.5, 0.15 + 0.03 * itemCount('adoptedChange'))
+  conditions:
+  - id: Expression
+    expression: hasStatus('adminRole')
+  actions:
+  - id: DisplayMessage
+    message: message.regularEmerges
+    confirm: message.nice
+  - id: GiveItem
+    itemId: regular
+    amount: 1
+
+# ---------------------------------------------------------------------------
+# Admin phase: proposals (the old paper review flow)
+# ---------------------------------------------------------------------------
+- id: ProposalReception
+  trigger: WeekBegin
+  probability: 0.7
+  conditions:
+  - id: Expression
+    expression: itemCount('announcedProposal') >= 1
+  actions:
+  - id: CoinFlip
+    probability: min(0.85, max(0.1, 0.3 + getAttributeValue('player.approvalBoost') + community.trust / 400))
+    success:
+    - id: DisplayRandomMessage
+      messages:
+      - message.proposalLoved1
+      - message.proposalLoved2
+      - message.proposalLoved3
+      confirm: message.party
+    - id: UpdateItemAmounts
+      updates:
+        announcedProposal: -1
+        adoptedChange: 1
+        regular: 1
+    - id: UpdateVariables
+      updates:
+        server.members: server.members + floor(server.members * (0.3 + min(itemCount('adoptedChange') * 0.04, 0.4) + random() * 0.2)) + 300
+        player.vibes: player.vibes + 8
+        community.trust: community.trust + 2
+    fail:
+    - id: DisplayRandomMessage
+      messages:
+      - message.backlash1
+      - message.backlash2
+      - message.backlash3
+      - message.backlash4
+      confirm: message.unfortunate
+    - id: UpdateItemAmounts
+      updates:
+        announcedProposal: -1
+        backlash: 1
+    - id: UpdateVariables
+      updates:
+        server.members: server.members - floor(server.members * (0.1 + random() * 0.1)) - 50
+        player.vibes: player.vibes - 8
+        community.trust: community.trust - 3
+        mod.morale: mod.morale - 5
+- id: RevisedProposalReception
+  trigger: WeekBegin
+  probability: 0.7
+  conditions:
+  - id: Expression
+    expression: itemCount('revisedProposal') >= 1
+  actions:
+  - id: CoinFlip
+    probability: min(0.9, max(0.1, 0.55 + getAttributeValue('player.approvalBoost') + community.trust / 400))
+    success:
+    - id: DisplayMessage
+      message: message.revisedLoved
+      confirm: message.phew
+    - id: UpdateItemAmounts
+      updates:
+        revisedProposal: -1
+        adoptedChange: 1
+    - id: UpdateVariables
+      updates:
+        server.members: server.members + floor(server.members * (0.08 + random() * 0.07)) + 50
+        player.vibes: player.vibes + 5
+        community.trust: community.trust + 1
+    fail:
+    - id: DisplayMessage
+      message: message.revisedRejected
+      confirm: message.unfortunate
+    - id: UpdateItemAmounts
+      updates:
+        revisedProposal: -1
+    - id: UpdateVariables
+      updates:
+        server.members: server.members - floor(server.members * 0.04) - 25
+        player.vibes: player.vibes - 5
+        community.trust: community.trust - 2
+
+# ---------------------------------------------------------------------------
+# Weekly choices
+# ---------------------------------------------------------------------------
+- id: WeekTasks
+  trigger: WeekBegin
+  conditions:
+  - id: Expression
+    expression: player.weekSkipped === 0
+  actions:
+  - id: DisplayChoices
+    message: message.newWeek
+    choices:
+    # ---------------- member / mod choices ----------------
+    - message: message.lurk
+      requirement: "!hasStatus('adminRole')"
+      actions:
+      - id: UpdateVariable
+        variable: player.lurks
+        value: player.lurks + 1
+      - id: CoinFlip
+        probability: max(0.2, 0.6 + player.lurks / 100 - itemCount('inJoke') / 15)
+        success:
+        - id: DisplayRandomMessage
+          messages:
+          - message.gotInJoke1
+          - message.gotInJoke2
+          - message.gotInJoke3
+          confirm: message.lol
+        - id: GiveItem
+          itemId: inJoke
+          amount: 1
+        fail:
+        - id: DisplayRandomMessage
+          messages:
+          - message.noInJoke1
+          - message.noInJoke2
+          confirm: message.huh
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes - 2
+    - message: message.post
+      requirement: "!hasStatus('adminRole') && itemCount('inJoke') > 0"
+      actions:
+      - id: GiveItem
+        itemId: inJoke
+        amount: -1
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+      - id: CoinFlip
+        probability: min(0.5 + player.lurks / 40, 0.8)
+        success:
+        - id: DisplayRandomMessage
+          messages:
+          - message.goodPost1
+          - message.goodPost2
+          confirm: message.nice
+        - id: GiveItem
+          itemId: goodPost
+          amount: 1
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes + 3
+        fail:
+        - id: DisplayRandomMessage
+          messages:
+          - message.badPost1
+          - message.badPost2
+          - message.badPost3
+          confirm: message.oof
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes - 4
+    - message: message.polishBanger
+      requirement: "!hasStatus('adminRole') && itemCount('goodPost') > 0"
+      actions:
+      - id: GiveItem
+        itemId: goodPost
+        amount: -1
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+      - id: Random
+        groups:
+        - weight: 0.45
+          actions:
+          - id: DisplayMessage
+            message: message.pinned
+            confirm: message.party
+          - id: GiveItem
+            itemId: pinnedMessage
+            amount: 1
+          - id: UpdateVariables
+            updates:
+              player.vibes: player.vibes + 6
+              community.trust: community.trust + 3
+        - weight: 0.35
+          actions:
+          - id: DisplayMessage
+            message: message.someReactions
+            confirm: message.ok
+          - id: UpdateVariable
+            variable: community.trust
+            value: community.trust + 1
+        - weight: 0.2
+          actions:
+          - id: DisplayMessage
+            message: message.bangerFlopped
+            confirm: message.oof
+          - id: UpdateVariable
+            variable: player.vibes
+            value: player.vibes - 5
+    - message: message.submitEmoji
+      requirement: hasStatus('emojiContest') && itemCount('inJoke') > 0
+      actions:
+      - id: GiveItem
+        itemId: inJoke
+        amount: -1
+      - id: CoinFlip
+        probability: 0.45
+        success:
+        - id: DisplayMessage
+          message: message.emojiWon
+          confirm: message.party
+        - id: GiveItem
+          itemId: customEmoji
+          amount: 1
+        - id: UpdateVariables
+          updates:
+            player.vibes: player.vibes + 8
+            community.trust: community.trust + 2
+        fail:
+        - id: DisplayMessage
+          message: message.emojiLost
+          confirm: message.shame
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes - 3
+    - message: message.helpNewbie
+      requirement: "!hasStatus('adminRole')"
+      actions:
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+      - id: Random
+        groups:
+        - weight: 0.7
+          actions:
+          - id: DisplayRandomMessage
+            messages:
+            - message.helpedNewbie1
+            - message.helpedNewbie2
+            confirm: message.nice
+          - id: UpdateVariables
+            updates:
+              community.trust: community.trust + 3
+              player.vibes: player.vibes + 1
+        - weight: 0.3
+          actions:
+          - id: DisplayMessage
+            message: message.helpVampire
+            confirm: message.ugh
+          - id: UpdateVariables
+            updates:
+              community.trust: community.trust + 1
+              player.vibes: player.vibes - 4
+    - message: message.clearReports
+      requirement: hasStatus('modTitle')
+      actions:
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 2
+      - id: Random
+        groups:
+        - weight: 0.7
+          actions:
+          - id: DisplayMessage
+            message: message.clearedReports
+            confirm: message.ok
+          - id: UpdateVariables
+            updates:
+              community.trust: community.trust + 4
+              player.vibes: player.vibes - 1
+        - weight: 0.3
+          actions:
+          - id: DisplayMessage
+            message: message.cursedReport
+            confirm: message.ugh
+          - id: UpdateVariables
+            updates:
+              community.trust: community.trust + 2
+              player.vibes: player.vibes - 6
+    - message: message.banRaiders
+      requirement: hasStatus('raid')
+      actions:
+      - id: DisplayMessage
+        message: message.bannedRaiders
+        confirm: message.great
+      - id: SetStatus
+        statusId: raid
+        on: false
+      - id: UpdateVariables
+        updates:
+          community.trust: community.trust + 4
+          player.burnout: player.burnout + 2
+          player.vibes: player.vibes - 2
+    # ---------------- admin choices ----------------
+    - message: message.listen
+      requirement: hasStatus('adminRole')
+      actions:
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+      - id: CoinFlip
+        probability: max(0.3, 0.8 - itemCount('idea') / 10)
+        success:
+        - id: DisplayRandomMessage
+          messages:
+          - message.gotIdea1
+          - message.gotIdea2
+          - message.gotIdea3
+          confirm: message.hmm
+        - id: GiveItem
+          itemId: idea
+          amount: 1
+        fail:
+        - id: DisplayRandomMessage
+          messages:
+          - message.noIdea1
+          - message.noIdea2
+          confirm: message.huh
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes - 2
+    - message: message.draft
+      requirement: hasStatus('adminRole') && itemCount('idea') > 0
+      actions:
+      - id: GiveItem
+        itemId: idea
+        amount: -1
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+      - id: CoinFlip
+        probability: 0.75
+        success:
+        - id: DisplayMessage
+          message: message.drafted
+          confirm: message.great
+        - id: GiveItem
+          itemId: draftProposal
+          amount: 1
+        fail:
+        - id: DisplayMessage
+          message: message.draftFailed
+          confirm: message.unfortunate
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes - 3
+    - message: message.testWaters
+      requirement: hasStatus('adminRole') && itemCount('draftProposal') > 0 && itemCount('mod') > 0 && !hasStatus('testedWaters')
+      actions:
+      - id: DisplayMessage
+        message: message.testedWaters
+        confirm: message.great
+      - id: SetStatus
+        statusId: testedWaters
+        on: true
+      - id: UpdateVariable
+        variable: mod.morale
+        value: mod.morale - 8
+    - message: message.announce
+      requirement: hasStatus('adminRole') && itemCount('draftProposal') > 0 && itemCount('announcedProposal') === 0
+      actions:
+      - id: DisplayMessage
+        message: message.announced
+        confirm: message.gulp
+      - id: UpdateItemAmounts
+        updates:
+          draftProposal: -1
+          announcedProposal: 1
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+    - message: message.revise
+      requirement: hasStatus('adminRole') && itemCount('backlash') > 0 && itemCount('revisedProposal') === 0
+      actions:
+      - id: DisplayMessage
+        message: message.revised
+        confirm: message.fingersCrossed
+      - id: UpdateItemAmounts
+        updates:
+          backlash: -1
+          revisedProposal: 1
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
+    - message: message.recruit
+      requirement: hasStatus('adminRole') && itemCount('regular') > 0
+      actions:
+      - id: GiveItem
+        itemId: regular
+        amount: -1
+      - id: CoinFlip
+        probability: 0.75
+        success:
+        - id: DisplayMessage
+          message: message.recruited
+          confirm: message.welcome
+        - id: GiveItem
+          itemId: mod
+          amount: 1
+        - id: UpdateVariable
+          variable: mod.morale
+          value: max(mod.morale + 5, 60)
+        fail:
+        - id: DisplayMessage
+          message: message.recruitDeclined
+          confirm: message.fair
+        - id: UpdateVariable
+          variable: player.vibes
+          value: player.vibes - 2
+    - message: message.appreciate
+      requirement: hasStatus('adminRole') && itemCount('mod') > 0
+      actions:
+      - id: DisplayRandomMessage
+        messages:
+        - message.appreciated1
+        - message.appreciated2
+        confirm: message.nice
+      - id: UpdateVariables
+        updates:
+          mod.morale: mod.morale + 20
+          player.vibes: player.vibes + 2
+    - message: message.modYourself
+      requirement: hasStatus('adminRole')
+      actions:
+      - id: DisplayMessage
+        message: message.moddedYourself
+        confirm: message.ugh
+      - id: UpdateVariables
+        updates:
+          mod.morale: mod.morale + 10
+          player.vibes: player.vibes - 6
+          player.burnout: player.burnout + 2
+    # ---------------- always ----------------
+    - message: message.voiceChat
+      actions:
+      - id: UpdateVariables
+        updates:
+          player.vibes: player.vibes + 4
+          player.burnout: max(0, player.burnout - 2)
+      - id: Random
+        groups:
+        - weight: "!hasStatus('adminRole') * 0.1"
+          actions:
+          - id: DisplayMessage
+            message: message.voiceRole
+            confirm: message.party
+          - id: GiveItem
+            itemId: vanityRole
+            amount: 1
+        - weight: hasStatus('adminRole') * 0.3
+          actions:
+          - id: DisplayMessage
+            message: message.voiceRegular
+            confirm: message.nice
+          - id: GiveItem
+            itemId: regular
+            amount: 1
+        - weight: 0.9 - hasStatus('adminRole') * 0.3
+          actions:
+          - id: DisplayRandomMessage
+            messages:
+            - message.voiceChat1
+            - message.voiceChat2
+            - message.voiceChat3
+            confirm: message.lol
+    - message: message.touchGrass
+      actions:
+      - id: DisplayRandomMessage
+        messages:
+        - message.touchedGrass1
+        - message.touchedGrass2
+        confirm: message.great
+      - id: UpdateVariables
+        updates:
+          player.vibes: player.vibes + 7
+          player.burnout: 0
+      - id: SetStatus
+        statusId: burnout
+        on: false

@@ -1,0 +1,42 @@
+---
+items:
+  # Member pipeline: inJoke -> goodPost -> pinnedMessage
+  - id: inJoke
+    rarity: 1
+  - id: goodPost
+    rarity: 3
+  - id: pinnedMessage
+    rarity: 6
+  # Collectibles
+  - id: vanityRole
+    rarity: 10
+  - id: customEmoji
+    rarity: 10
+    effects:
+    - attributeModifiers:
+      - target: player.approvalBoost
+        type: Absolute
+        amount: 0.05
+  # Admin resources
+  - id: regular
+    rarity: 3
+  - id: mod
+    rarity: 6
+  # Admin pipeline: idea -> draftProposal -> announcedProposal -> adoptedChange / backlash
+  - id: idea
+    rarity: 1
+  - id: draftProposal
+    rarity: 3
+  - id: announcedProposal
+    rarity: 6
+  - id: revisedProposal
+    rarity: 6
+  - id: backlash
+    rarity: 3
+  - id: adoptedChange
+    rarity: 10
+    effects:
+    - attributeModifiers:
+      - target: server.growthBoost
+        type: Absolute
+        amount: 0.01

@@ -1,0 +1,63 @@
+---
+statsBar:
+  items:
+  - text: ui.vibesMeter
+    side: left
+    updateTrigger:
+      variables: ["player.vibes"]
+    conditionalStyles:
+    - condition: player.vibes > 40
+      styleClasses: ["normal"]
+    - condition: player.vibes <= 40 && player.vibes > 20
+      styleClasses: ["warning"]
+    - condition: player.vibes <= 20
+      styleClasses: ["critical"]
+  - text: ui.membersMeter
+    side: left
+    updateTrigger:
+      variables: ["server.members"]
+  - text: ui.timeMeter
+    side: right
+    updateTrigger:
+      variables: ["year", "week"]
+  - text: ui.moraleMeter
+    side: right
+    updateTrigger:
+      variables: ["mod.morale"]
+    conditionalStyles:
+    - condition: "!hasStatus('adminRole')"
+      styleClasses: ["hidden"]
+    - condition: mod.morale <= 30
+      styleClasses: ["warning"]
+messageWindow:
+  typewriterSpeed: 30
+itemList:
+  title: ui.items
+  raritySpecificStyles:
+    - minRarity: 10
+      styleClasses: ["r_legendary"]
+    - minRarity: 6
+      maxRarity: 9
+      styleClasses: ["r_rare"]
+    - minRarity: 3
+      maxRarity: 5
+      styleClasses: ["r_uncommon"]
+statusList:
+  title: ui.status
+footer:
+  preamble:
+  buttons:
+    - text: ui.helpButton
+      messageTitle: ui.helpTitle
+      message: ui.helpContent
+      confirmText: ui.ok
+    - text: ui.privacyNoticeButton
+      messageTitle: ui.privacyNoticeTitle
+      message: ui.privacyNoticeContent
+      confirmText: ui.ok
+    - text: ui.github
+      url: https://github.com/morriswmz/phd-game
+    - text: ui.seedButton
+      messageTitle: ui.seedTitle
+      message: ui.seedContent
+      confirmText: ui.ok
