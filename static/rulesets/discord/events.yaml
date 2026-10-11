@@ -89,7 +89,7 @@
   actions:
   - id: UpdateVariables
     updates:
-      player.vibes: "player.vibes + getAttributeValue('player.vibesBoost') + itemCount('mod') - hasStatus('adminRole') * floor(server.members / 20000) - (elapsedWeek > 1 && !hasStatus('newcomer') && !hasStatus('modTitle') && !hasStatus('adminRole')) * 2"
+      player.vibes: "player.vibes + getAttributeValue('player.vibesBoost') + itemCount('mod') - hasStatus('adminRole') * floor(server.members / 20000)"
       player.weekSkipped: 0
       # Organic growth. Before admin, the server grows on its own. As admin,
       # growth comes from your mods (scaled by morale) and adopted changes.
@@ -398,7 +398,7 @@
 # ---------------------------------------------------------------------------
 - id: DramaFallout
   trigger: WeekBegin
-  probability: 0.5
+  probability: 0.35
   conditions:
   - id: Expression
     expression: hasStatus('drama')
@@ -412,13 +412,13 @@
         confirm: message.ugh
       - id: UpdateVariables
         updates:
-          server.members: server.members - floor(server.members * (0.03 + random() * 0.03))
-          mod.morale: mod.morale - 10
-          community.trust: community.trust - 4
+          server.members: server.members - floor(server.members * (0.01 + random() * 0.02))
+          mod.morale: mod.morale - 5
+          community.trust: community.trust - 2
     - condition: hasStatus('modTitle')
       actions:
       - id: CoinFlip
-        probability: 0.25
+        probability: 0.1
         success:
         - id: DisplayMessage
           message: message.dramaDemoted
@@ -440,11 +440,11 @@
           confirm: message.ugh
         - id: UpdateVariable
           variable: community.trust
-          value: community.trust - 6
+          value: community.trust - 4
     - condition: 1
       actions:
       - id: CoinFlip
-        probability: 0.4
+        probability: 0.25
         success:
         - id: UpdateVariables
           updates:
@@ -453,7 +453,7 @@
             player.weekSkipped: 1
         - id: Switch
           branches:
-          - condition: player.strikes >= 2
+          - condition: player.strikes >= 3
             actions:
             - id: EndGame
               message: message.banned
@@ -471,7 +471,7 @@
           confirm: message.ugh
         - id: UpdateVariable
           variable: community.trust
-          value: community.trust - 3
+          value: community.trust - 2
 
 # ---------------------------------------------------------------------------
 # Mod-phase drama
@@ -1031,7 +1031,7 @@
       - id: UpdateVariables
         updates:
           player.vibes: player.vibes + 8
-          community.trust: community.trust - 3
+          community.trust: community.trust - 1
       - id: SetStatus
         statusId: drama
         on: true

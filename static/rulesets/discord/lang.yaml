@@ -226,8 +226,8 @@ message.hotTake2: "You subtweeted a mod in #general. Everyone knows who it's abo
 message.hotTake3: "You declared the server's favorite meme 'actually cringe'. The replies are on fire."
 message.worthIt: Worth it.
 message.dramaMember: "People are still arguing about your hot take. Your reputation takes a hit."
-message.dramaMuted: "A mod **muted** you for a week. You're on thin ice now."
-message.banned: "Second strike. The mods **banned** you. Your vanity roles vanish with you. **GAME OVER.**"
+message.dramaMuted: "A mod **muted** you for a week. Three mutes and you're out."
+message.banned: "Third strike. The mods **banned** you. Your vanity roles vanish with you. **GAME OVER.**"
 message.dramaMod: "The other mods are furious about your hot take. Your reputation takes a hit."
 message.dramaDemoted: "The admin pulled your **mod role**. You're a regular member again."
 message.dramaAdmin: "Your hot take from the admin account went badly. Members are leaving and your mods are embarrassed."
