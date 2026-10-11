@@ -325,7 +325,7 @@
   trigger: WeekBegin
   conditions:
   - id: Expression
-    expression: "!hasStatus('modTitle') && !hasStatus('adminRole') && elapsedWeek >= 8 && elapsedWeek - player.lastModOffer >= 12 && ((itemCount('pinnedMessage') >= 1 && community.trust >= 15 && itemCount('vanityRole') + itemCount('customEmoji') + itemCount('pinnedMessage') >= 2) || (elapsedWeek >= 34 && community.trust >= 20))"
+    expression: "!hasStatus('modTitle') && !hasStatus('adminRole') && elapsedWeek >= 12 && elapsedWeek - player.lastModOffer >= 12 && ((itemCount('pinnedMessage') >= 1 && community.trust >= 15 && itemCount('vanityRole') + itemCount('customEmoji') + itemCount('pinnedMessage') >= 2) || (elapsedWeek >= 34 && community.trust >= 20))"
   actions:
   - id: DisplayChoices
     message: message.modOffer
