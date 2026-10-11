@@ -325,7 +325,7 @@
   trigger: WeekBegin
   conditions:
   - id: Expression
-    expression: "!hasStatus('modTitle') && !hasStatus('adminRole') && elapsedWeek >= 8 && elapsedWeek - player.lastModOffer >= 12 && itemCount('pinnedMessage') >= 1 && community.trust >= 15 && itemCount('vanityRole') + itemCount('customEmoji') >= 2"
+    expression: "!hasStatus('modTitle') && !hasStatus('adminRole') && elapsedWeek >= 8 && elapsedWeek - player.lastModOffer >= 12 && ((itemCount('pinnedMessage') >= 1 && community.trust >= 15 && itemCount('vanityRole') + itemCount('customEmoji') + itemCount('pinnedMessage') >= 2) || (elapsedWeek >= 34 && community.trust >= 20))"
   actions:
   - id: DisplayChoices
     message: message.modOffer
@@ -817,7 +817,8 @@
         value: player.burnout + 1
       - id: Random
         groups:
-        - weight: 0.45 - hasStatus('burnout') * 0.25
+        # Holding an in-joke (not spent) improves the pin odds.
+        - weight: 0.45 - hasStatus('burnout') * 0.25 + min(itemCount('inJoke'), 1) * 0.15
           actions:
           - id: DisplayMessage
             message: message.pinned
@@ -902,6 +903,17 @@
             updates:
               community.trust: community.trust + 1
               player.vibes: player.vibes - 6
+      # The more trusted you are, the more likely a mod pins your answer.
+      # Holding an in-joke (not spent) improves the odds.
+      - id: CoinFlip
+        probability: min(0.25, max(0, community.trust) / 150) + min(itemCount('inJoke'), 1) * 0.15
+        success:
+        - id: DisplayMessage
+          message: message.helpPinned
+          confirm: message.party
+        - id: GiveItem
+          itemId: pinnedMessage
+          amount: 1
     - message: message.clearReports
       requirement: hasStatus('modTitle')
       actions:
@@ -1147,7 +1159,15 @@
           - id: GiveItem
             itemId: regular
             amount: 1
-        - weight: 0.9 - hasStatus('adminRole') * 0.3
+        - weight: "!hasStatus('adminRole') * 0.2"
+          actions:
+          - id: DisplayMessage
+            message: message.voiceInJoke
+            confirm: message.lol
+          - id: GiveItem
+            itemId: inJoke
+            amount: 1
+        - weight: 0.7
           actions:
           - id: DisplayRandomMessage
             messages:
