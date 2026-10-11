@@ -87,7 +87,7 @@ const strategies = {
 };
 
 class HeadlessProxy {
-  constructor(pick) { this.pick = pick; this.engine = null; this.log = []; }
+  constructor(pick) { this.hotTakes = []; this.pick = pick; this.engine = null; this.log = []; }
   displayMessage(message) { this.log.push(message); return Promise.resolve(); }
   displayChoices(message, choices) {
     const idx = this.pick(choices, this.engine, message);
@@ -97,6 +97,11 @@ class HeadlessProxy {
       process.stderr.write(`w${g('elapsedWeek')} members=${g('server.members')} vibes=${g('player.vibes')} mods=${this.engine.inventory.count('mod')} morale=${g('mod.morale')} | ${choices.map(c => c[0].replace('message.', '')).join(',')} -> ${chosen ? chosen[0].replace('message.', '') : idx}\n`);
     }
     this.log.push(`> ${chosen ? chosen[0] : idx}`);
+    if (chosen && chosen[0] === 'message.hotTake') {
+      const st = this.engine.statusTable;
+      const role = st.count('adminRole') > 0 ? 'admin' : st.count('modTitle') > 0 ? 'mod' : 'member';
+      this.hotTakes.push(role);
+    }
     return Promise.resolve(idx);
   }
 }
@@ -150,6 +155,9 @@ async function playOne(pick) {
     won: ended ? ended.state === EndGameState.Win : false,
     weeks: lastSnapshot ? lastSnapshot.week + 1 : 1,
     last: lastSnapshot,
+    hotTakes: proxy.hotTakes,
+    fallout: ['dramaMember', 'dramaMuted', 'banned', 'dramaMod', 'dramaDemoted', 'dramaAdmin']
+      .reduce((o, k) => (o[k] = proxy.log.filter(m => m === 'message.' + k).length, o), {}),
     ...stats,
   };
 }
