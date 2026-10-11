@@ -21,6 +21,8 @@
       player.vibes: 60
       player.burnout: 0
       player.lurks: 0
+      player.strikes: 0
+      server.peakMembers: 0
       player.weekSkipped: 0
       player.modSince: -1
       player.adminSince: -1
@@ -86,18 +88,21 @@
   actions:
   - id: UpdateVariables
     updates:
-      player.vibes: player.vibes + getAttributeValue('player.vibesBoost') + itemCount('mod') - hasStatus('adminRole') * floor(server.members / 25000)
+      player.vibes: "player.vibes + getAttributeValue('player.vibesBoost') + itemCount('mod') - hasStatus('adminRole') * floor(server.members / 20000) - (elapsedWeek > 1 && !hasStatus('newcomer') && !hasStatus('modTitle') && !hasStatus('adminRole')) * 2"
       player.weekSkipped: 0
       # Organic growth. Before admin, the server grows on its own. As admin,
       # growth comes from your mods (scaled by morale) and adopted changes.
       server.members: "server.members + floor(server.members * ((hasStatus('adminRole') ? 0.004 + 0.003 * min(itemCount('mod'), 8) * mod.morale / 100 : 0.012) + getAttributeValue('server.growthBoost') - hasStatus('raid') * 0.03 - itemCount('backlash') * 0.01))"
+  - id: UpdateVariable
+    variable: server.peakMembers
+    value: max(server.peakMembers, server.members)
   - id: Switch
     branches:
     - condition: hasStatus('adminRole') && itemCount('mod') > 0
       actions:
       - id: UpdateVariable
         variable: mod.morale
-        value: mod.morale - 2 - floor(server.members / (8000 * max(itemCount('mod'), 1)))
+        value: mod.morale - 1 - floor(server.members / (15000 * max(itemCount('mod'), 1)))
 
 # ---------------------------------------------------------------------------
 # Endings. Losses are checked before the win.
@@ -135,7 +140,7 @@
   trigger: WeekBegin
   conditions:
   - id: Expression
-    expression: hasStatus('adminRole') && server.members < 50
+    expression: hasStatus('adminRole') && (server.members < 50 || server.members < server.peakMembers * 0.3)
   actions:
   - id: EndGame
     message: message.deadServer
@@ -253,21 +258,9 @@
   - id: SetStatus
     statusId: serverBoosted
     on: true
-  - id: Switch
-    branches:
-    - condition: community.trust >= 5 && !hasStatus('adminRole')
-      actions:
-      - id: DisplayMessage
-        message: message.serverBoostRole
-        confirm: message.cool
-      - id: GiveItem
-        itemId: vanityRole
-        amount: 1
-    - condition: 1
-      actions:
-      - id: DisplayMessage
-        message: message.serverBoost
-        confirm: message.cool
+  - id: DisplayMessage
+    message: message.serverBoost
+    confirm: message.cool
 - id: LevelUp10
   trigger: WeekBegin
   once: true
@@ -296,7 +289,7 @@
     amount: 1
 - id: Raid
   trigger: WeekBegin
-  probability: 0.04 + server.members / 1000000
+  probability: 0.08 + server.members / 500000
   conditions:
   - id: Expression
     expression: (hasStatus('modTitle') || hasStatus('adminRole')) && !hasStatus('raid')
@@ -360,7 +353,7 @@
   trigger: WeekBegin
   conditions:
   - id: Expression
-    expression: hasStatus('modTitle') && elapsedWeek - player.modSince >= 12 && elapsedWeek - player.lastAdminOffer >= 12 && community.trust >= 35
+    expression: hasStatus('modTitle') && elapsedWeek - player.modSince >= 10 && elapsedWeek - player.lastAdminOffer >= 12 && community.trust >= 30
   actions:
   - id: DisplayChoices
     message: message.adminOffer
@@ -384,7 +377,7 @@
         on: false
       - id: GiveItem
         itemId: mod
-        amount: 3
+        amount: 4
       - id: UpdateVariables
         updates:
           mod.morale: 70
@@ -398,6 +391,86 @@
         updates:
           player.lastAdminOffer: elapsedWeek
           player.vibes: player.vibes + 5
+
+# ---------------------------------------------------------------------------
+# Drama you started (hot takes)
+# ---------------------------------------------------------------------------
+- id: DramaFallout
+  trigger: WeekBegin
+  probability: 0.5
+  conditions:
+  - id: Expression
+    expression: hasStatus('drama')
+  actions:
+  - id: Switch
+    branches:
+    - condition: hasStatus('adminRole')
+      actions:
+      - id: DisplayMessage
+        message: message.dramaAdmin
+        confirm: message.ugh
+      - id: UpdateVariables
+        updates:
+          server.members: server.members - floor(server.members * (0.03 + random() * 0.03))
+          mod.morale: mod.morale - 10
+          community.trust: community.trust - 4
+    - condition: hasStatus('modTitle')
+      actions:
+      - id: CoinFlip
+        probability: 0.25
+        success:
+        - id: DisplayMessage
+          message: message.dramaDemoted
+          confirm: message.sucks
+        - id: SetStatus
+          statusId: modTitle
+          on: false
+        - id: SetStatus
+          statusId: drama
+          on: false
+        - id: UpdateVariables
+          updates:
+            community.trust: community.trust - 10
+            player.lastModOffer: elapsedWeek
+            player.vibes: player.vibes - 5
+        fail:
+        - id: DisplayMessage
+          message: message.dramaMod
+          confirm: message.ugh
+        - id: UpdateVariable
+          variable: community.trust
+          value: community.trust - 6
+    - condition: 1
+      actions:
+      - id: CoinFlip
+        probability: 0.4
+        success:
+        - id: UpdateVariables
+          updates:
+            player.strikes: player.strikes + 1
+            community.trust: community.trust - 5
+            player.weekSkipped: 1
+        - id: Switch
+          branches:
+          - condition: player.strikes >= 2
+            actions:
+            - id: EndGame
+              message: message.banned
+              confirm: message.restart
+              winning: false
+              endingType: banned
+          - condition: 1
+            actions:
+            - id: DisplayMessage
+              message: message.dramaMuted
+              confirm: message.sucks
+        fail:
+        - id: DisplayMessage
+          message: message.dramaMember
+          confirm: message.ugh
+        - id: UpdateVariable
+          variable: community.trust
+          value: community.trust - 3
 
 # ---------------------------------------------------------------------------
 # Mod-phase drama
@@ -455,7 +528,7 @@
 # ---------------------------------------------------------------------------
 - id: ModQuits
   trigger: WeekBegin
-  probability: (100 - mod.morale) / 300
+  probability: max(0, 60 - mod.morale) / 300
   conditions:
   - id: Expression
     expression: hasStatus('adminRole') && itemCount('mod') > 0
@@ -513,7 +586,7 @@
           community.trust: community.trust - 3
 - id: RegularEmerges
   trigger: WeekBegin
-  probability: min(0.5, 0.15 + 0.03 * itemCount('adoptedChange'))
+  probability: min(0.25, 0.08 + 0.02 * itemCount('adoptedChange'))
   conditions:
   - id: Expression
     expression: hasStatus('adminRole')
@@ -530,13 +603,12 @@
 # ---------------------------------------------------------------------------
 - id: ProposalReception
   trigger: WeekBegin
-  probability: 0.7
   conditions:
   - id: Expression
     expression: itemCount('announcedProposal') >= 1
   actions:
   - id: CoinFlip
-    probability: min(0.85, max(0.1, 0.3 + getAttributeValue('player.approvalBoost') + community.trust / 400))
+    probability: min(0.85, max(0.1, 0.3 + getAttributeValue('player.approvalBoost') + community.trust / 400 - hasStatus('burnout') * 0.15))
     success:
     - id: DisplayRandomMessage
       messages:
@@ -551,9 +623,10 @@
         regular: 1
     - id: UpdateVariables
       updates:
-        server.members: server.members + floor(server.members * (0.3 + min(itemCount('adoptedChange') * 0.04, 0.4) + random() * 0.2)) + 300
+        server.members: server.members + floor(server.members * (0.5 + min(itemCount('adoptedChange') * 0.1, 0.5) + random() * 0.3)) + 300
         player.vibes: player.vibes + 8
         community.trust: community.trust + 2
+        mod.morale: mod.morale + 10
     fail:
     - id: DisplayRandomMessage
       messages:
@@ -568,19 +641,18 @@
         backlash: 1
     - id: UpdateVariables
       updates:
-        server.members: server.members - floor(server.members * (0.1 + random() * 0.1)) - 50
+        server.members: server.members - floor(server.members * (0.15 + random() * 0.1)) - 50
         player.vibes: player.vibes - 8
         community.trust: community.trust - 3
         mod.morale: mod.morale - 5
 - id: RevisedProposalReception
   trigger: WeekBegin
-  probability: 0.7
   conditions:
   - id: Expression
     expression: itemCount('revisedProposal') >= 1
   actions:
   - id: CoinFlip
-    probability: min(0.9, max(0.1, 0.55 + getAttributeValue('player.approvalBoost') + community.trust / 400))
+    probability: min(0.9, max(0.1, 0.55 + getAttributeValue('player.approvalBoost') + community.trust / 400 - hasStatus('burnout') * 0.15))
     success:
     - id: DisplayMessage
       message: message.revisedLoved
@@ -594,6 +666,7 @@
         server.members: server.members + floor(server.members * (0.08 + random() * 0.07)) + 50
         player.vibes: player.vibes + 5
         community.trust: community.trust + 1
+        mod.morale: mod.morale + 5
     fail:
     - id: DisplayMessage
       message: message.revisedRejected
@@ -627,7 +700,7 @@
         variable: player.lurks
         value: player.lurks + 1
       - id: CoinFlip
-        probability: max(0.2, 0.6 + player.lurks / 100 - itemCount('inJoke') / 15)
+        probability: max(0.2, 0.6 + player.lurks / 100 - itemCount('inJoke') / 15 - hasStatus('burnout') * 0.2)
         success:
         - id: DisplayRandomMessage
           messages:
@@ -646,7 +719,7 @@
           confirm: message.huh
         - id: UpdateVariable
           variable: player.vibes
-          value: player.vibes - 2
+          value: player.vibes - 4
     - message: message.post
       requirement: "!hasStatus('adminRole') && itemCount('inJoke') > 0"
       actions:
@@ -657,7 +730,7 @@
         variable: player.burnout
         value: player.burnout + 1
       - id: CoinFlip
-        probability: min(0.5 + player.lurks / 40, 0.8)
+        probability: min(0.5 + player.lurks / 40, 0.8) - hasStatus('burnout') * 0.25
         success:
         - id: DisplayRandomMessage
           messages:
@@ -691,7 +764,7 @@
         value: player.burnout + 1
       - id: Random
         groups:
-        - weight: 0.45
+        - weight: 0.45 - hasStatus('burnout') * 0.25
           actions:
           - id: DisplayMessage
             message: message.pinned
@@ -772,7 +845,7 @@
           - id: UpdateVariables
             updates:
               community.trust: community.trust + 1
-              player.vibes: player.vibes - 4
+              player.vibes: player.vibes - 6
     - message: message.clearReports
       requirement: hasStatus('modTitle')
       actions:
@@ -798,7 +871,7 @@
           - id: UpdateVariables
             updates:
               community.trust: community.trust + 2
-              player.vibes: player.vibes - 6
+              player.vibes: player.vibes - 8
     - message: message.banRaiders
       requirement: hasStatus('raid')
       actions:
@@ -821,7 +894,7 @@
         variable: player.burnout
         value: player.burnout + 1
       - id: CoinFlip
-        probability: max(0.3, 0.8 - itemCount('idea') / 10)
+        probability: max(0.3, 0.8 - itemCount('idea') / 10 - hasStatus('burnout') * 0.2)
         success:
         - id: DisplayRandomMessage
           messages:
@@ -851,7 +924,7 @@
         variable: player.burnout
         value: player.burnout + 1
       - id: CoinFlip
-        probability: 0.75
+        probability: 0.75 - hasStatus('burnout') * 0.25
         success:
         - id: DisplayMessage
           message: message.drafted
@@ -911,7 +984,7 @@
         itemId: regular
         amount: -1
       - id: CoinFlip
-        probability: 0.75
+        probability: 0.25
         success:
         - id: DisplayMessage
           message: message.recruited
@@ -929,18 +1002,6 @@
         - id: UpdateVariable
           variable: player.vibes
           value: player.vibes - 2
-    - message: message.appreciate
-      requirement: hasStatus('adminRole') && itemCount('mod') > 0
-      actions:
-      - id: DisplayRandomMessage
-        messages:
-        - message.appreciated1
-        - message.appreciated2
-        confirm: message.nice
-      - id: UpdateVariables
-        updates:
-          mod.morale: mod.morale + 20
-          player.vibes: player.vibes + 2
     - message: message.modYourself
       requirement: hasStatus('adminRole')
       actions:
@@ -949,9 +1010,25 @@
         confirm: message.ugh
       - id: UpdateVariables
         updates:
-          mod.morale: mod.morale + 10
+          mod.morale: mod.morale + 15
           player.vibes: player.vibes - 6
           player.burnout: player.burnout + 2
+    - message: message.hotTake
+      requirement: (hasStatus('burnout') || player.vibes < 30) && !hasStatus('drama')
+      actions:
+      - id: DisplayRandomMessage
+        messages:
+        - message.hotTake1
+        - message.hotTake2
+        - message.hotTake3
+        confirm: message.worthIt
+      - id: UpdateVariables
+        updates:
+          player.vibes: player.vibes + 8
+          community.trust: community.trust - 3
+      - id: SetStatus
+        statusId: drama
+        on: true
     # ---------------- always ----------------
     - message: message.voiceChat
       actions:
@@ -999,3 +1076,21 @@
       - id: SetStatus
         statusId: burnout
         on: false
+      - id: Switch
+        branches:
+        - condition: hasStatus('adminRole') && itemCount('mod') > 0
+          actions:
+          - id: DisplayMessage
+            message: message.modsCovered
+            confirm: message.ok
+          - id: UpdateVariable
+            variable: mod.morale
+            value: mod.morale - 6
+        - condition: hasStatus('adminRole')
+          actions:
+          - id: DisplayMessage
+            message: message.serverDrifted
+            confirm: message.ugh
+          - id: UpdateVariable
+            variable: server.members
+            value: server.members - floor(server.members * 0.04) - 20

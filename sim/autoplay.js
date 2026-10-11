@@ -60,13 +60,15 @@ const strategies = {
     if (pick !== null) return pick;
     if (vibes >= 15 && has('adminRole') && items('mod') < 3) pick = first('message.recruit');
     if (pick !== null) return pick;
-    if (vibes < 20) pick = first('message.touchGrass');
-    else if (has('adminRole') && items('mod') > 0 && v('mod.morale') < 45) pick = first('message.appreciate');
-    else if (vibes < 32) pick = first('message.voiceChat');
+    const admin = has('adminRole');
+    if (vibes < (admin ? 12 : 20)) pick = first('message.touchGrass');
+    else if (has('burnout') && !admin) pick = first('message.touchGrass');
+    else if (has('burnout') && admin && vibes < 40) pick = first('message.touchGrass');
+    else if (admin && items('mod') > 0 && v('mod.morale') < 45 && vibes >= 30) pick = first('message.modYourself');
+    else if (vibes < (admin ? 40 : 32)) pick = first('message.voiceChat');
     if (pick !== null) return pick;
     if (has('adminRole')) {
       const order = ['message.banRaiders'];
-      if (items('mod') > 0 && v('mod.morale') < 45) order.push('message.appreciate');
       if (items('mod') < 7) order.push('message.recruit');
       order.push('message.revise', 'message.testWaters', 'message.announce',
                  'message.draft', 'message.listen');

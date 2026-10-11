@@ -16,6 +16,9 @@ statsBar:
     side: left
     updateTrigger:
       variables: ["server.members"]
+    conditionalStyles:
+    - condition: "!hasStatus('modTitle') && !hasStatus('adminRole')"
+      styleClasses: ["hidden"]
   - text: ui.timeMeter
     side: right
     updateTrigger:

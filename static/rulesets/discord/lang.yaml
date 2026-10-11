@@ -5,7 +5,7 @@ ui.status: "Roles & Status:"
 ui.github: Original game
 ui.helpButton: Help
 ui.helpTitle: Help
-ui.helpContent: "Make one choice each week. Climb from **newcomer** to **mod** to **admin**, then grow the server to **100,000 members**. Keep your **vibes** above 0. As admin, every mod gives you +1 vibe a week, but they need looking after. All outcomes are decided by the RNG. **Sometimes the RNG is a troll.**"
+ui.helpContent: "Make one choice each week. Climb from **newcomer** to **mod** to **admin**, then grow the server to **100,000 members**. Keep your **vibes** above 0. Burnout makes everything harder, and hot takes feel great until the fallout. As admin, every mod gives you +1 vibe a week, but they need looking after. All outcomes are decided by the RNG. **Sometimes the RNG is a troll.**"
 ui.privacyNoticeButton: About
 ui.privacyNoticeTitle: About
 ui.privacyNoticeContent: "A Discord-themed mod of **PhD Simulator** by Mianzhi Wang (MIT license). Same engine, new ruleset. Not affiliated with Discord."
@@ -28,9 +28,9 @@ item.vanityRole.description: A colorful role with a silly name next to yours. Pu
 item.customEmoji: Personalized Emoji
 item.customEmoji.description: "An emoji of your own in the server. People react with it. **+5% proposal approval** while you have one."
 item.regular: Regular
-item.regular.description: A dependable community member. Could be recruited as a mod.
+item.regular.description: "A dependable community member. You can ask them to mod, but most would rather just hang out (**1 in 4** say yes)."
 item.mod: Mod
-item.mod.description: "A volunteer moderator. **+1 vibe** every week, keeps raids under control, and helps the server grow. Watch their morale."
+item.mod.description: "A volunteer moderator. **+1 vibe** every week, keeps raids under control, and helps the server grow. Morale drops every week; adopted proposals and doing mod work yourself raise it."
 item.idea: Idea
 item.idea.description: Feedback from the community. Can be drafted into a proposal.
 item.draftProposal: Draft Proposal
@@ -51,13 +51,15 @@ status.emojiContest.description: You can submit an emoji if you have an in-joke 
 status.serverBoosted: Server Boosted
 status.serverBoosted.description: Someone boosted the server. Growth is up for a while.
 status.burnout: Burnout
-status.burnout.description: "**-5 vibes** every week. Go touch grass."
+status.burnout.description: "**-5 vibes** every week, and everything you try is less likely to work. Go touch grass."
 status.modTitle: Mod
-status.modTitle.description: "**-1 vibe** every week. Moderation is work. Unlocks the report queue."
+status.modTitle.description: "**-2 vibes** every week. Moderation is work. Unlocks the report queue."
 status.adminRole: Admin
 status.adminRole.description: "**-5 vibes** every week. Everything is your problem now. Mods help (+1 each)."
 status.raid: Raid
 status.raid.description: "**-2 vibes** and **-3% members** every week until the raiders are banned or get bored (up to 4 weeks)."
+status.drama: Drama
+status.drama.description: "You started something. Fallout may land any week while this lasts."
 status.testedWaters: Tested the Waters
 status.testedWaters.description: "Your mods gauged the mood. **+20% approval** on the next announcement."
 
@@ -95,7 +97,7 @@ message.restartNewTimeline: Start a new timeline
 message.burnedOutMember: "One day you just... stop opening the app. The server keeps going without you. **GAME OVER.**"
 message.burnedOutMod: "You hand in your mod role with a three-paragraph message and leave the server. **GAME OVER.**"
 message.burnedOutAdmin: "You mute every channel, then the whole server, then Discord itself. The mods find out from the audit log. **GAME OVER.**"
-message.deadServer: "The last active channel goes quiet. The member count is a graveyard of alt accounts. **The server is dead. GAME OVER.**"
+message.deadServer: "The server has lost most of the members it had at its peak. The last active channel goes quiet. **The server is a ghost town. GAME OVER.**"
 message.hundredK: "**100,000 MEMBERS.** The server is huge. Brands are DMing you. Your mods are tired but proud. Time to decide what this is."
 message.business: Take it seriously as a business.
 message.passReins: Pass the reins.
@@ -116,7 +118,6 @@ message.burnoutIgnored: You keep scrolling. It doesn't feel good.
 # Server happenings
 message.emojiContest: "An **emoji contest** has started! Submissions are open for 4 weeks."
 message.serverBoost: Someone boosted the server! Growth is up for a while.
-message.serverBoostRole: "Someone boosted the server and gave everyone active a **vanity role**. You got one!"
 message.levelUp10: "The leveling bot announces you've reached **level 10**. You got a **vanity role**!"
 message.levelUp30: "The leveling bot announces you've reached **level 30**. You got another **vanity role**!"
 message.raid: "A **raid**! A wave of brand-new accounts is spamming every channel."
@@ -131,7 +132,7 @@ message.declinedMod: They understand. The offer might come again.
 message.adminOffer: "The owner calls you in voice: 'I'm stepping back. I want you to take over as **admin**.'"
 message.acceptAdmin: Accept. It's your server now.
 message.declineAdmin: "Decline. You're happy as a mod."
-message.becameAdmin: "You're the **admin**. Three of the old mods stay on to help you."
+message.becameAdmin: "You're the **admin**. Four of the old mods stay on to help you."
 message.adminNotice: "Grow the server to **100,000 members**. Being admin costs **5 vibes a week**; each **mod** gives back 1. Keep their morale up or they'll quit."
 message.declinedAdmin: The owner sighs and says they'll ask again in a few months.
 
@@ -217,11 +218,21 @@ message.revised: You rewrote it based on the complaints and posted it again.
 message.recruit: Recruit a regular as a mod.
 message.recruited: "They said yes! **+1 mod.**"
 message.recruitDeclined: "They said no. They're just here for the memes."
-message.appreciate: Do something nice for your mods.
-message.appreciated1: "You gifted Nitro to the whole mod team. **Morale up.**"
-message.appreciated2: "Mod movie night in voice. Someone fell asleep. **Morale up.**"
 message.modYourself: Pick up the mod work yourself.
 message.moddedYourself: "You handled the reports so the mods could rest. **Morale up**, your vibes down."
+message.hotTake: Post a hot take. (You're cranky enough.)
+message.hotTake1: "You posted a 12-paragraph rant about how the server has gone downhill. It felt **amazing**."
+message.hotTake2: "You subtweeted a mod in #general. Everyone knows who it's about."
+message.hotTake3: "You declared the server's favorite meme 'actually cringe'. The replies are on fire."
+message.worthIt: Worth it.
+message.dramaMember: "People are still arguing about your hot take. Your reputation takes a hit."
+message.dramaMuted: "A mod **muted** you for a week. You're on thin ice now."
+message.banned: "Second strike. The mods **banned** you. Your vanity roles vanish with you. **GAME OVER.**"
+message.dramaMod: "The other mods are furious about your hot take. Your reputation takes a hit."
+message.dramaDemoted: "The admin pulled your **mod role**. You're a regular member again."
+message.dramaAdmin: "Your hot take from the admin account went badly. Members are leaving and your mods are embarrassed."
+message.modsCovered: "Your mods covered for you while you were away. They're a little tired. **Mod morale down.**"
+message.serverDrifted: "With nobody running things, spam piled up and some members drifted away."
 message.voiceChat: Hang out in voice chat.
 message.voiceChat1: Three hours of talking about nothing. Perfect.
 message.voiceChat2: Someone screen-shared a terrible movie. Best night all month.

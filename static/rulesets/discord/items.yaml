@@ -39,4 +39,4 @@ items:
     - attributeModifiers:
       - target: server.growthBoost
         type: Absolute
-        amount: 0.01
+        amount: 0.015
