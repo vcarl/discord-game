@@ -1,0 +1,8 @@
+---
+attributes:
+- id: player.vibesBoost
+  baseValue: 0
+- id: player.approvalBoost
+  baseValue: 0
+- id: server.growthBoost
+  baseValue: 0
