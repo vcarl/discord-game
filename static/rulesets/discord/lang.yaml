@@ -18,7 +18,7 @@ ui.moraleMeter: Mod morale {{mod.morale}}
 ui.timeMeter: Year {{year}} Week {{week}}
 
 item.inJoke: In-Joke
-item.inJoke.description: You finally get one of the server's in-jokes. Can be turned into a post.
+item.inJoke.description: "You finally get one of the server's in-jokes. Your next post or emoji entry uses it and is **more likely to land**."
 item.goodPost: Good Post
 item.goodPost.description: A post that got some reactions. Polish it into a banger and it might get pinned.
 item.pinnedMessage: Pinned Message
@@ -47,7 +47,7 @@ item.adoptedChange.description: "A change the community loves. **Permanently boo
 status.newcomer: Newcomer Glow
 status.newcomer.description: "**+1 vibe** every week. Everything is new and exciting."
 status.emojiContest: Emoji Contest
-status.emojiContest.description: You can submit an emoji if you have an in-joke to draw from.
+status.emojiContest.description: You can submit an emoji. Having an in-joke to draw from improves your chances.
 status.serverBoosted: Server Boosted
 status.serverBoosted.description: Someone boosted the server. Growth is up for a while.
 status.burnout: Burnout
@@ -178,7 +178,7 @@ message.gotInJoke2: "You learn the lore of the Great Channel Deletion of last ye
 message.gotInJoke3: "You figure out why a certain word gets you instantly ratioed. **+1 in-joke.**"
 message.noInJoke1: You read 400 messages and understood none of them.
 message.noInJoke2: The backlog was mostly people arguing about pineapple on pizza.
-message.post: Post an in-joke.
+message.post: "Post in #general."
 message.goodPost1: "People are reacting! **+1 good post.**"
 message.goodPost2: "Someone replied 'LMAO' in all caps. **+1 good post.**"
 message.badPost1: Crickets. Your message just sits there.

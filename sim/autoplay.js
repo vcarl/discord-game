@@ -75,7 +75,8 @@ const strategies = {
       pick = first(...order);
     } else {
       const order = ['message.banRaiders', 'message.submitEmoji',
-                     'message.polishBanger', 'message.post'];
+                     'message.polishBanger'];
+      if (items('inJoke') > 0) order.push('message.post');
       if (has('modTitle')) order.push('message.clearReports');
       order.push(v('community.trust') < 20 && Math.random() < 0.5
         ? 'message.helpNewbie' : 'message.lurk');

@@ -22,6 +22,7 @@
       player.burnout: 0
       player.lurks: 0
       player.strikes: 0
+      player.usedJoke: 0
       server.peakMembers: 0
       player.weekSkipped: 0
       player.modSince: -1
@@ -721,16 +722,18 @@
           variable: player.vibes
           value: player.vibes - 4
     - message: message.post
-      requirement: "!hasStatus('adminRole') && itemCount('inJoke') > 0"
+      requirement: "!hasStatus('adminRole')"
       actions:
+      # An in-joke is optional: it's spent if you have one and improves the odds.
+      - id: UpdateVariables
+        updates:
+          player.usedJoke: min(itemCount('inJoke'), 1)
+          player.burnout: player.burnout + 1
       - id: GiveItem
         itemId: inJoke
-        amount: -1
-      - id: UpdateVariable
-        variable: player.burnout
-        value: player.burnout + 1
+        amount: -player.usedJoke
       - id: CoinFlip
-        probability: min(0.5 + player.lurks / 40, 0.8) - hasStatus('burnout') * 0.25
+        probability: min(0.35 + player.lurks / 60 + player.usedJoke * 0.25, 0.85) - hasStatus('burnout') * 0.25
         success:
         - id: DisplayRandomMessage
           messages:
@@ -793,13 +796,16 @@
             variable: player.vibes
             value: player.vibes - 5
     - message: message.submitEmoji
-      requirement: hasStatus('emojiContest') && itemCount('inJoke') > 0
+      requirement: hasStatus('emojiContest')
       actions:
+      - id: UpdateVariable
+        variable: player.usedJoke
+        value: min(itemCount('inJoke'), 1)
       - id: GiveItem
         itemId: inJoke
-        amount: -1
+        amount: -player.usedJoke
       - id: CoinFlip
-        probability: 0.45
+        probability: 0.3 + player.usedJoke * 0.2
         success:
         - id: DisplayMessage
           message: message.emojiWon
