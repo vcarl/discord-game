@@ -44,12 +44,7 @@ status:
       - target: player.vibesBoost
         type: Absolute
         amount: -2
-  - id: testedWaters
-    duration: 4
-    effects:
-    - attributeModifiers:
-      - target: player.approvalBoost
-        type: Absolute
-        amount: 0.2
+  - id: hyped
+    duration: Infinity
   - id: drama
     duration: 4

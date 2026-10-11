@@ -31,6 +31,10 @@ items:
     rarity: 6
   - id: revisedProposal
     rarity: 6
+  - id: vettedProposal
+    rarity: 6
+  - id: announcedVetted
+    rarity: 6
   - id: backlash
     rarity: 3
   - id: adoptedChange

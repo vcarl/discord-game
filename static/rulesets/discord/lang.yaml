@@ -60,8 +60,6 @@ status.raid: Raid
 status.raid.description: "**-2 vibes** and **-3% members** every week until the raiders are banned or get bored (up to 4 weeks)."
 status.drama: Drama
 status.drama.description: "You started something. Fallout may land any week while this lasts."
-status.testedWaters: Tested the Waters
-status.testedWaters.description: "Your mods gauged the mood. **+20% approval** on the next announcement."
 
 # Opening
 message.beginning: "A friend DMs you an invite to a small Discord server for a niche hobby you're into. It has about **{{server.members}} members**."
@@ -131,15 +129,13 @@ message.declinedMod: They understand. The offer might come again.
 message.adminOffer: "The owner calls you in voice: 'I'm stepping back. I want you to take over as **admin**.'"
 message.acceptAdmin: Accept. It's your server now.
 message.declineAdmin: "Decline. You're happy as a mod."
-message.becameAdmin: "You're the **admin**. Four of the old mods stay on to help. Grow the server to **100,000 members**. Being admin costs **5 vibes a week**; each **mod** gives back 1. Keep their morale up or they'll quit."
+message.becameAdmin: "You're the **admin**. **{{admin.startingMods}}** of the old mods stay on to help. Grow the server to **100,000 members**. Being admin costs **5 vibes a week**; each **mod** gives back 1. Keep their morale up or they'll quit."
 message.declinedAdmin: The owner sighs and says they'll ask again in a few months.
 
 # Mod-phase drama
 message.backTheMods: Back the other mod.
-message.callItOut: Admit the ban was harsh.
+message.callItOut: Publicly say the ban was unfair.
 message.logOff: Log off and let it blow over.
-message.calledOutWell: People respect your honesty. Even the other mod comes around.
-message.calledOutBadly: The other mods feel thrown under the bus. Awkward mod chat.
 message.loggedOff: When you come back, it's been memed into oblivion.
 
 # Admin: mods
@@ -150,21 +146,17 @@ message.modDramaRight1: "Drama in #general: someone's furious about a ban anothe
 message.modDramaRight2: "Drama in #general over a ban another mod made. The banned user is posting screenshots, but they cropped out the part where they doxxed someone."
 message.modDramaWrong1: "Drama in #general over a ban another mod made. You check the logs: the user made one mildly rude joke and got permabanned with no warning."
 message.modDramaWrong2: "Drama in #general over a ban another mod made. It turns out the mod and the banned user had beef in another server."
-message.backedRightMod: "The logs back you up. People drop it once they see the full story."
-message.backedWrongMod: "People saw the logs too. Backing that ban made the mod team look like a clique."
 message.adminDramaAtFault1: "Two of your mods are fighting in mod chat. One has been quietly undoing the other's actions for weeks and badmouthing them in DMs."
 message.adminDramaAtFault2: "Two of your mods are fighting in mod chat. One of them keeps banning people who disagree with them, and the other finally called it out."
 message.adminDramaMisunderstanding1: "Two of your mods are fighting in mod chat. It looks like they both handled the same report differently and each thinks the other undermined them."
 message.adminDramaMisunderstanding2: "Two of your mods are fighting in mod chat over a rule that's honestly worded pretty vaguely."
-message.mediatedBadActor: "You spent hours trying to make peace, but one of them was never acting in good faith. The team is frustrated you didn't act."
-message.removedModUnfairly: "The rest of the team thinks that was unfair. It was a misunderstanding, and now everyone's worried they're next. **-1 mod.**"
 message.watersKilled1: "Your mods floated it quietly. The reaction was brutal. You scrap the proposal before it ever goes public."
 message.watersKilled2: "Your mods report back: nobody wants this. Better to find out now than in #announcements. **Proposal scrapped.**"
 message.mediate: Mediate it yourself.
 message.removeMod: Remove one of them.
 message.ignoreDrama: Ignore it.
 message.mediated: "Two hours in voice later, they've made up. You need a nap."
-message.removedMod: "Tense, but the rest of the team is relieved they're gone. **-1 mod.**"
+message.removedMod: "Tense, but the rest of the team is relieved. **-1 mod.**"
 message.ignoredDrama: The fighting dies down eventually. Everyone noticed you did nothing.
 message.regularEmerges: "A **regular** has emerged: someone who's always around and always helpful."
 
@@ -219,7 +211,6 @@ message.draft: Draft a proposal.
 message.drafted: "You wrote it up with a pros and cons list. **+1 draft proposal.**"
 message.draftFailed: The more you wrote, the worse it sounded. Scrapped.
 message.testWaters: Have your mods test the waters.
-message.testedWaters: "Your mods floated it quietly and people seem into it. **+20% approval** when you announce."
 message.announce: Announce a proposal.
 message.announced: "You hit send on the @everyone ping. No going back now."
 message.revise: Revise a proposal after the backlash.
@@ -256,3 +247,15 @@ message.voiceRole: "Someone made a role just for your voice chat crew. **+1 vani
 message.touchGrass: Touch grass.
 message.touchedGrass1: You went outside. The sun is really bright. **Vibes restored.**
 message.touchedGrass2: "You had a whole weekend without checking Discord once. **Vibes restored.**"
+message.backedTheMods: "You stand with the team. The mod team holds together, and the noise dies down."
+message.calledOutMod: "Some members respect you for it, but the other mod quits the team in protest. **If you ever run this place, you'll have one fewer mod.**"
+message.watersGood: "Your mods floated it quietly. People are into it. **It'll pass** when you announce it."
+message.watersHyped: "Your mods floated it and people are already hyped. **It'll pass**, and it'll bring in **20% more members** than usual."
+message.announceVetted: Announce the vetted proposal.
+message.announcedVetted: "You post it in #announcements. Your mods already know how this goes."
+item.vettedProposal: Vetted Proposal
+item.vettedProposal.description: Your mods tested it. It will be adopted when you announce it.
+item.announcedVetted: Announced Vetted Proposal
+item.announcedVetted.description: Posted in #announcements. The community will adopt it next week.
+status.hyped: Hyped
+status.hyped.description: "Your next vetted proposal brings in **20% more members**."

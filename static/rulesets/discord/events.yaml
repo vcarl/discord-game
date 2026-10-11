@@ -24,8 +24,8 @@
       player.strikes: 0
       player.usedJoke: 0
       rule.provokeChance: 0.01
-      drama.modRight: 0
-      drama.oneAtFault: 0
+      player.modsLost: 0
+      admin.startingMods: 4
       server.peakMembers: 0
       player.weekSkipped: 0
       player.modSince: -1
@@ -361,6 +361,9 @@
     choices:
     - message: message.acceptAdmin
       actions:
+      - id: UpdateVariable
+        variable: admin.startingMods
+        value: max(1, 4 - player.modsLost)
       - id: DisplayMessage
         message: message.becameAdmin
         confirm: message.gulp
@@ -375,7 +378,7 @@
         on: false
       - id: GiveItem
         itemId: mod
-        amount: 4
+        amount: admin.startingMods
       - id: UpdateVariables
         updates:
           mod.morale: 70
@@ -511,62 +514,29 @@
   - id: Expression
     expression: hasStatus('modTitle')
   actions:
-  # 1 = the ban was fair, 0 = the other mod overreacted. The intro text hints which.
-  - id: UpdateVariable
-    variable: drama.modRight
-    value: floor(random() * 2)
+  # The intro is flavor only; it doesn't change the outcomes below.
   - id: DisplayChoices
-    message:
-      default: [message.modDramaWrong1, message.modDramaWrong2]
-      branches:
-      - condition:
-          id: Expression
-          expression: drama.modRight === 1
-        text: [message.modDramaRight1, message.modDramaRight2]
+    message: [message.modDramaRight1, message.modDramaRight2, message.modDramaWrong1, message.modDramaWrong2]
     choices:
     - message: message.backTheMods
       actions:
-      - id: Switch
-        branches:
-        - condition: drama.modRight === 1
-          actions:
-          - id: DisplayMessage
-            message: message.backedRightMod
-            confirm: message.great
-          - id: UpdateVariables
-            updates:
-              community.trust: community.trust + 4
-              player.vibes: player.vibes + 2
-        - condition: 1
-          actions:
-          - id: DisplayMessage
-            message: message.backedWrongMod
-            confirm: message.oops
-          - id: UpdateVariables
-            updates:
-              community.trust: community.trust - 5
-              player.vibes: player.vibes - 4
+      - id: DisplayMessage
+        message: message.backedTheMods
+        confirm: message.great
+      - id: UpdateVariables
+        updates:
+          community.trust: community.trust + 3
+          player.vibes: player.vibes + 1
     - message: message.callItOut
       actions:
-      - id: Switch
-        branches:
-        - condition: drama.modRight === 0
-          actions:
-          - id: DisplayMessage
-            message: message.calledOutWell
-            confirm: message.great
-          - id: UpdateVariable
-            variable: community.trust
-            value: community.trust + 6
-        - condition: 1
-          actions:
-          - id: DisplayMessage
-            message: message.calledOutBadly
-            confirm: message.oops
-          - id: UpdateVariables
-            updates:
-              community.trust: community.trust - 6
-              player.vibes: player.vibes - 5
+      - id: DisplayMessage
+        message: message.calledOutMod
+        confirm: message.sucks
+      - id: UpdateVariables
+        updates:
+          community.trust: community.trust + 2
+          player.vibes: player.vibes - 3
+          player.modsLost: player.modsLost + 1
     - message: message.logOff
       actions:
       - id: DisplayMessage
@@ -606,64 +576,30 @@
   - id: Expression
     expression: hasStatus('adminRole') && itemCount('mod') >= 2
   actions:
-  # 1 = one mod is clearly out of line, 0 = an honest misunderstanding.
-  - id: UpdateVariable
-    variable: drama.oneAtFault
-    value: floor(random() * 2)
+  # The intro is flavor only; it doesn't change the outcomes below.
   - id: DisplayChoices
-    message:
-      default: [message.adminDramaMisunderstanding1, message.adminDramaMisunderstanding2]
-      branches:
-      - condition:
-          id: Expression
-          expression: drama.oneAtFault === 1
-        text: [message.adminDramaAtFault1, message.adminDramaAtFault2]
+    message: [message.adminDramaAtFault1, message.adminDramaAtFault2, message.adminDramaMisunderstanding1, message.adminDramaMisunderstanding2]
     choices:
     - message: message.mediate
       actions:
-      - id: Switch
-        branches:
-        - condition: drama.oneAtFault === 0
-          actions:
-          - id: DisplayMessage
-            message: message.mediated
-            confirm: message.phew
-          - id: UpdateVariables
-            updates:
-              player.vibes: player.vibes - 4
-              mod.morale: mod.morale + 10
-        - condition: 1
-          actions:
-          - id: DisplayMessage
-            message: message.mediatedBadActor
-            confirm: message.ugh
-          - id: UpdateVariables
-            updates:
-              player.vibes: player.vibes - 6
-              mod.morale: mod.morale - 5
+      - id: DisplayMessage
+        message: message.mediated
+        confirm: message.phew
+      - id: UpdateVariables
+        updates:
+          player.vibes: player.vibes - 6
+          mod.morale: mod.morale + 5
     - message: message.removeMod
       actions:
+      - id: DisplayMessage
+        message: message.removedMod
+        confirm: message.ok
       - id: UpdateItemAmounts
         updates:
           mod: -1
-      - id: Switch
-        branches:
-        - condition: drama.oneAtFault === 1
-          actions:
-          - id: DisplayMessage
-            message: message.removedMod
-            confirm: message.ok
-          - id: UpdateVariable
-            variable: mod.morale
-            value: mod.morale + 15
-        - condition: 1
-          actions:
-          - id: DisplayMessage
-            message: message.removedModUnfairly
-            confirm: message.oops
-          - id: UpdateVariable
-            variable: mod.morale
-            value: mod.morale - 10
+      - id: UpdateVariable
+        variable: mod.morale
+        value: mod.morale + 10
     - message: message.ignoreDrama
       actions:
       - id: DisplayMessage
@@ -734,6 +670,32 @@
         player.vibes: player.vibes - 8
         community.trust: community.trust - 3
         mod.morale: mod.morale - 5
+- id: VettedProposalReception
+  trigger: WeekBegin
+  conditions:
+  - id: Expression
+    expression: itemCount('announcedVetted') >= 1
+  actions:
+  - id: DisplayRandomMessage
+    messages:
+    - message.proposalLoved1
+    - message.proposalLoved2
+    - message.proposalLoved3
+    confirm: message.party
+  - id: UpdateItemAmounts
+    updates:
+      announcedVetted: -1
+      adoptedChange: 1
+      regular: 1
+  - id: UpdateVariables
+    updates:
+      server.members: server.members + floor(server.members * (0.5 + min(itemCount('adoptedChange') * 0.1, 0.5) + random() * 0.3) * (1 + hasStatus('hyped') * 0.2)) + 300
+      player.vibes: player.vibes + 8
+      community.trust: community.trust + 2
+      mod.morale: mod.morale + 10
+  - id: SetStatus
+    statusId: hyped
+    on: false
 - id: RevisedProposalReception
   trigger: WeekBegin
   conditions:
@@ -1034,31 +996,56 @@
           variable: player.vibes
           value: player.vibes - 3
     - message: message.testWaters
-      requirement: hasStatus('adminRole') && itemCount('draftProposal') > 0 && itemCount('mod') > 0 && !hasStatus('testedWaters')
+      requirement: hasStatus('adminRole') && itemCount('draftProposal') > 0 && itemCount('mod') > 0
       actions:
+      # Pre-rolls how the community would receive it. Failing proposals are
+      # scrapped; passing ones become vetted and are adopted when announced.
       - id: UpdateVariable
         variable: mod.morale
         value: mod.morale - 8
+      - id: GiveItem
+        itemId: draftProposal
+        amount: -1
       - id: CoinFlip
-        probability: 0.3
+        probability: min(0.85, max(0.1, 0.3 + getAttributeValue('player.approvalBoost') + community.trust / 400 - hasStatus('burnout') * 0.15))
         success:
-        - id: DisplayMessage
-          message: message.testedWaters
-          confirm: message.great
-        - id: SetStatus
-          statusId: testedWaters
-          on: true
+        - id: GiveItem
+          itemId: vettedProposal
+          amount: 1
+        - id: CoinFlip
+          probability: 0.3
+          success:
+          - id: DisplayMessage
+            message: message.watersHyped
+            confirm: message.party
+          - id: SetStatus
+            statusId: hyped
+            on: true
+          fail:
+          - id: DisplayMessage
+            message: message.watersGood
+            confirm: message.great
         fail:
         - id: DisplayRandomMessage
           messages:
           - message.watersKilled1
           - message.watersKilled2
           confirm: message.phew
-        - id: GiveItem
-          itemId: draftProposal
-          amount: -1
+    - message: message.announceVetted
+      requirement: hasStatus('adminRole') && itemCount('vettedProposal') > 0 && itemCount('announcedProposal') + itemCount('announcedVetted') === 0
+      actions:
+      - id: DisplayMessage
+        message: message.announcedVetted
+        confirm: message.great
+      - id: UpdateItemAmounts
+        updates:
+          vettedProposal: -1
+          announcedVetted: 1
+      - id: UpdateVariable
+        variable: player.burnout
+        value: player.burnout + 1
     - message: message.announce
-      requirement: hasStatus('adminRole') && itemCount('draftProposal') > 0 && itemCount('announcedProposal') === 0
+      requirement: hasStatus('adminRole') && itemCount('draftProposal') > 0 && itemCount('announcedProposal') + itemCount('announcedVetted') === 0
       actions:
       - id: DisplayMessage
         message: message.announced
