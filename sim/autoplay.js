@@ -87,9 +87,12 @@ const strategies = {
 };
 
 class HeadlessProxy {
-  constructor(pick) { this.hotTakes = []; this.pick = pick; this.engine = null; this.log = []; }
+  constructor(pick) { this.hotTakes = []; this.offers = {}; this.pick = pick; this.engine = null; this.log = []; }
   displayMessage(message) { this.log.push(message); return Promise.resolve(); }
   displayChoices(message, choices) {
+    if ((message === 'message.modOffer' || message === 'message.adminOffer') && !(message in this.offers)) {
+      this.offers[message] = this.engine.variableStore.getVar('elapsedWeek', false);
+    }
     const idx = this.pick(choices, this.engine, message);
     const chosen = choices.find(c => c[1] === idx);
     if (process.env.TRACE && this.engine.statusTable.count('adminRole') > 0) {
@@ -156,6 +159,8 @@ async function playOne(pick) {
     weeks: lastSnapshot ? lastSnapshot.week + 1 : 1,
     last: lastSnapshot,
     hotTakes: proxy.hotTakes,
+    modOfferWeek: proxy.offers['message.modOffer'] ?? null,
+    adminOfferWeek: proxy.offers['message.adminOffer'] ?? null,
     fallout: ['dramaMember', 'dramaMuted', 'banned', 'dramaMod', 'dramaDemoted', 'dramaAdmin']
       .reduce((o, k) => (o[k] = proxy.log.filter(m => m === 'message.' + k).length, o), {}),
     ...stats,
