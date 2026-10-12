@@ -59,7 +59,9 @@ footer:
       message: ui.privacyNoticeContent
       confirmText: ui.ok
     - text: ui.github
-      url: https://github.com/morriswmz/phd-game
+      url: https://github.com/vcarl/discord-game
+    - text: ui.bsky
+      url: https://bsky.app/profile/vcarl.com
     - text: ui.seedButton
       messageTitle: ui.seedTitle
       message: ui.seedContent

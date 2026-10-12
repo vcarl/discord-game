@@ -2,13 +2,24 @@
 ui.ok: Ok.
 ui.items: "Inventory:"
 ui.status: "Roles & Status:"
-ui.github: Original game
+ui.github: GitHub
+ui.bsky: Bluesky
+ui.shareBsky: Share your last run on Bluesky
+share.text: "{ending} in Discord Simulator (week {weeks}, {members} members)."
+share.neverJoined: I never joined the server
+share.banned: I got banned
+share.burnedOutMember: I burned out as a member
+share.burnedOutMod: I burned out as a mod
+share.burnedOutAdmin: I burned out as an admin
+share.deadServer: My server became a ghost town
+share.business: I turned my server into a business
+share.passedReins: I passed the reins of my server
 ui.helpButton: Help
 ui.helpTitle: Help
 ui.helpContent: "Make one choice each week. Climb from **newcomer** to **mod** to **admin**, then grow the server to **100,000 members**. Keep your **vibes** above 0. Burnout makes everything harder, and hot takes feel great until the fallout. As admin, every mod gives you +1 vibe a week, but they need looking after. All outcomes are decided by the RNG. **Sometimes the RNG is a troll.**"
 ui.privacyNoticeButton: About
 ui.privacyNoticeTitle: About
-ui.privacyNoticeContent: "A Discord-themed mod of **PhD Simulator** by Mianzhi Wang (MIT license). Same engine, new ruleset. Not affiliated with Discord."
+ui.privacyNoticeContent: "A Discord-themed mod of **PhD Simulator** by Mianzhi Wang (MIT license). Same engine, new ruleset. Not affiliated with Discord. Original: github.com/morriswmz/phd-game. Visits are counted anonymously with GoatCounter (no cookies)."
 ui.seedButton: Seed
 ui.seedTitle: Seed
 ui.seedContent: "The seed for the current timeline is **{{@seed}}**."

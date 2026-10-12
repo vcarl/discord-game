@@ -58,6 +58,8 @@ export class GuiFooter extends GuiBase<HTMLElement> {
       }
       if ('url' in buttonDef) {
         button.href = buttonDef.url;
+        button.target = '_blank';
+        button.rel = 'noopener';
       } else {
         localizer.addRequiredKey(buttonDef.messageTitle);
         localizer.addRequiredKey(buttonDef.message);

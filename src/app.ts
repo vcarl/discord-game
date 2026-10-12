@@ -65,6 +65,13 @@ class App {
                     endingType: event.endingType
                 }
             }));
+            // Runs before the engine restarts, so variables still hold the
+            // final state.
+            this._showShareLink(event.endingType);
+            (window as any).goatcounter?.count?.({
+                path: 'ending/' + event.endingType,
+                event: true
+            });
         };
         await this._gameEngine.start(false);
         // Debugging info for translation keys
@@ -77,6 +84,26 @@ class App {
         };
         gameLoop();
         this._started = true;
+    }
+
+    private _showShareLink(endingType: string): void {
+        const vars = this._gameEngine.variableStore;
+        const text = this._localizer.translate('share.text')
+            .replace('{ending}', this._localizer.translate('share.' + endingType))
+            .replace('{weeks}', String(vars.getVar('elapsedWeek', false) ?? 0))
+            .replace('{members}', (vars.getVar('server.members', false) ?? 0).toLocaleString('en-US'));
+        let link = document.getElementById('share_bsky') as HTMLAnchorElement | null;
+        if (!link) {
+            link = document.createElement('a');
+            link.id = 'share_bsky';
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = this._localizer.translate('ui.shareBsky');
+            const footer = document.getElementById('footer')!;
+            footer.append(' | ', link);
+        }
+        link.href = 'https://bsky.app/intent/compose?text=' +
+            encodeURIComponent(text + ' ' + location.origin + location.pathname);
     }
 
     private _dumpDebugInfo(debugConfig: DebugConfig): void {
