@@ -106,6 +106,23 @@ class App {
                 [t('share.statPeak'), Math.max(vars.getVar('server.peakMembers', false) ?? 0,
                     vars.getVar('server.members', false) ?? 0).toLocaleString('en-US')],
             ],
+            lists: [
+                {
+                    title: t('ui.status'),
+                    entries: Object.values(this._gameEngine.statusTable.items)
+                        .map(([status]) => <[string, string]>[
+                            t(status.unlocalizedName), '#dbdee1'
+                        ])
+                },
+                {
+                    title: t('ui.items'),
+                    entries: Object.values(this._gameEngine.inventory.items)
+                        .map(([item, count]) => <[string, string]>[
+                            `${t(item.unlocalizedName)} x${count}`,
+                            rarityColor(item.rarity)
+                        ])
+                },
+            ],
             url: gameUrl.replace(/^https?:\/\//, ''),
         });
         const imageUrl = canvas.toDataURL('image/png');
@@ -175,6 +192,15 @@ class App {
             console.log(`# Unnecessary translation keys (${unnecessaryKeys.length}):\n${unnecessaryKeys.join('\n')}`);
         }
     }
+}
+
+// ponytail: mirrors raritySpecificStyles in gui.yaml and the r_* colors in
+// main.css; read them from the GUI definition if rulesets start to differ.
+function rarityColor(rarity: number): string {
+    if (rarity >= 10) return '#f0b232';
+    if (rarity >= 6) return '#c58af9';
+    if (rarity >= 3) return '#23a55a';
+    return '#dbdee1';
 }
 
 let appConfig: AppConfig = {};
