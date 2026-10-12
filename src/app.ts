@@ -7,6 +7,8 @@ import { GameEngine, GameConfig, GameActionProxy } from './gameEngine';
 import { SimpleGameTextEngine } from './gui/textEngine';
 import { downloadAndParse } from './utils/network';
 import { SetBuilder } from './utils/collection';
+import { EndGameState } from './endGameState';
+import { drawShareCard } from './gui/shareCard';
 
 interface DebugConfig {
     dumpTranslationKeys?: boolean;
@@ -67,7 +69,7 @@ class App {
             }));
             // Runs before the engine restarts, so variables still hold the
             // final state.
-            this._showShareLink(event.endingType);
+            this._showShareLink(event.state, event.endingType);
             (window as any).goatcounter?.count?.({
                 path: 'ending/' + event.endingType,
                 event: true
@@ -86,24 +88,61 @@ class App {
         this._started = true;
     }
 
-    private _showShareLink(endingType: string): void {
+    private _showShareLink(state: EndGameState, endingType: string): void {
         const vars = this._gameEngine.variableStore;
-        const text = this._localizer.translate('share.text')
-            .replace('{ending}', this._localizer.translate('share.' + endingType))
-            .replace('{weeks}', String(vars.getVar('elapsedWeek', false) ?? 0))
-            .replace('{members}', (vars.getVar('server.members', false) ?? 0).toLocaleString('en-US'));
+        const t = (key: string) => this._localizer.translate(key);
+        const num = (name: string) => (vars.getVar(name, false) ?? 0).toLocaleString('en-US');
+        const ending = t('share.' + endingType);
+        const text = t('share.text')
+            .replace('{ending}', ending)
+            .replace('{weeks}', num('elapsedWeek'))
+            .replace('{members}', num('server.members'));
+        const gameUrl = location.origin + location.pathname;
+        const canvas = drawShareCard({
+            won: state === EndGameState.Win,
+            ending,
+            stats: [
+                [t('share.statWeeks'), num('elapsedWeek')],
+                [t('share.statMembers'), num('server.members')],
+                [t('share.statPeak'), Math.max(vars.getVar('server.peakMembers', false) ?? 0,
+                    vars.getVar('server.members', false) ?? 0).toLocaleString('en-US')],
+            ],
+            url: gameUrl.replace(/^https?:\/\//, ''),
+        });
+        const imageUrl = canvas.toDataURL('image/png');
+        let file: File | undefined;
+        canvas.toBlob((blob) => {
+            if (blob) file = new File([blob], 'discord-simulator.png', { type: 'image/png' });
+        });
+
         let link = document.getElementById('share_bsky') as HTMLAnchorElement | null;
         if (!link) {
             link = document.createElement('a');
             link.id = 'share_bsky';
             link.target = '_blank';
             link.rel = 'noopener';
-            link.textContent = this._localizer.translate('ui.shareBsky');
+            link.textContent = t('ui.shareBsky');
             const footer = document.getElementById('footer')!;
             footer.append(' | ', link);
         }
         link.href = 'https://bsky.app/intent/compose?text=' +
-            encodeURIComponent(text + ' ' + location.origin + location.pathname);
+            encodeURIComponent(text + ' ' + gameUrl);
+        link.onclick = (e) => {
+            // Phones: the native share sheet can hand the image to the
+            // Bluesky app. Elsewhere the compose intent can't carry an image,
+            // so download it for manual attaching and let the link open.
+            if (file && matchMedia('(pointer: coarse)').matches &&
+                navigator.canShare?.({ files: [file] })) {
+                e.preventDefault();
+                navigator.share({ files: [file], text: text + ' ' + gameUrl })
+                    .catch(() => {});
+                return;
+            }
+            const download = document.createElement('a');
+            download.href = imageUrl;
+            download.download = 'discord-simulator.png';
+            download.click();
+        };
     }
 
     private _dumpDebugInfo(debugConfig: DebugConfig): void {

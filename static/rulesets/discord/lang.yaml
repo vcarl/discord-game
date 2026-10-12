@@ -4,8 +4,11 @@ ui.items: "Inventory:"
 ui.status: "Roles & Status:"
 ui.github: GitHub
 ui.bsky: Bluesky
-ui.shareBsky: Share your last run on Bluesky
+ui.shareBsky: Share your result on Bluesky
 share.text: "{ending} in Discord Simulator (week {weeks}, {members} members)."
+share.statWeeks: Weeks
+share.statMembers: Members
+share.statPeak: Peak members
 share.neverJoined: I never joined the server
 share.banned: I got banned
 share.burnedOutMember: I burned out as a member
