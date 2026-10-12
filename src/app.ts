@@ -67,9 +67,8 @@ class App {
                     endingType: event.endingType
                 }
             }));
-            // Runs before the engine restarts, so variables still hold the
-            // final state.
-            this._showShareLink(event.state, event.endingType);
+            // Fires when the ending is decided, before its message shows.
+            this._showShareButton(event.state, event.endingType);
             (window as any).goatcounter?.count?.({
                 path: 'ending/' + event.endingType,
                 event: true
@@ -88,7 +87,7 @@ class App {
         this._started = true;
     }
 
-    private _showShareLink(state: EndGameState, endingType: string): void {
+    private _showShareButton(state: EndGameState, endingType: string): void {
         const vars = this._gameEngine.variableStore;
         const t = (key: string) => this._localizer.translate(key);
         const num = (name: string) => (vars.getVar(name, false) ?? 0).toLocaleString('en-US');
@@ -115,18 +114,25 @@ class App {
             if (blob) file = new File([blob], 'discord-simulator.png', { type: 'image/png' });
         });
 
-        let link = document.getElementById('share_bsky') as HTMLAnchorElement | null;
-        if (!link) {
-            link = document.createElement('a');
-            link.id = 'share_bsky';
-            link.target = '_blank';
-            link.rel = 'noopener';
-            link.textContent = t('ui.shareBsky');
-            const footer = document.getElementById('footer')!;
-            footer.append(' | ', link);
-        }
+        const link = document.createElement('a');
+        link.className = 'btn';
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = t('ui.shareBsky');
         link.href = 'https://bsky.app/intent/compose?text=' +
             encodeURIComponent(text + ' ' + gameUrl);
+        // The ending message's confirm button is added after the typewriter
+        // finishes; sit next to it and leave when it does.
+        const choices = document.querySelector('#message_window .choices_container')!;
+        const observer = new MutationObserver(() => {
+            if (!link.isConnected && choices.children.length) {
+                choices.appendChild(link);
+            } else if (link.isConnected && choices.children.length === 1) {
+                link.remove();
+                observer.disconnect();
+            }
+        });
+        observer.observe(choices, { childList: true });
         link.onclick = (e) => {
             // Phones: the native share sheet can hand the image to the
             // Bluesky app. Elsewhere the compose intent can't carry an image,

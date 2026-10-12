@@ -98,6 +98,12 @@ export class GameEngine {
                 if (endingType) {
                     this._endingType = endingType;
                 }
+                if (this.onGameEnd) {
+                    this.onGameEnd(
+                        this,
+                        new GameEndEvent(this._endGameState, this._endingType)
+                    );
+                }
             },
         };
     }
@@ -272,12 +278,6 @@ export class GameEngine {
                 this._executionContext);
             if (this._endGameState !== EndGameState.None) {
                 // Restart the game
-                if (this.onGameEnd) {
-                    this.onGameEnd(
-                        this,
-                        new GameEndEvent(this._endGameState, this._endingType)
-                    );
-                }
                 await this.start(this._endGameState === EndGameState.Win);
                 return;
             } else if (!pending) {

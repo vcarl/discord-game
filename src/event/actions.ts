@@ -1032,18 +1032,18 @@ export class EAEndGame extends EventAction {
     }
 
     execute(context: EventActionExecutionContext): EventActionResult | Promise<EventActionResult> {
+        // Set before the message so game-end listeners can act on the ending
+        // screen (e.g. offer sharing) while the final state is still intact.
+        context.setEndGameState(
+            this._winning ? EndGameState.Win : EndGameState.Loss,
+            this._endingType
+        );
         return context.actionProxy.displayMessage(
             this._message.getTranslationKey(context),
             this._confirm.getTranslationKey(context),
             '',
             this._fx
-        ).then(() => {
-            context.setEndGameState(
-                this._winning ? EndGameState.Win : EndGameState.Loss,
-                this._endingType
-            );
-            return EventActionResult.StopExecutionGlobally;
-        });
+        ).then(() => EventActionResult.StopExecutionGlobally);
     }
 
     collectTranslationKeys(): Set<string> {
