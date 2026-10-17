@@ -22,6 +22,11 @@ function comparePendingTrigger(a: PendingTrigger, b: PendingTrigger): boolean {
 
 export class GameEventEngine implements EventOccurrenceTracker {
 
+    /**
+     * Called with the event id each time an event's actions start executing.
+     */
+    onEventExecuted?: (eventId: string) => void;
+
     private _eventsByTrigger: Map<string, GameEvent[]> = new Map();
     // id => (GameEvent, disabled)
     private _eventInfoById: Map<string, GameEventInfo> = new Map();
@@ -184,6 +189,7 @@ export class GameEventEngine implements EventOccurrenceTracker {
             }
             // Mark as occurred
             ++info.occurrenceCount;
+            this.onEventExecuted?.(e.id);
             // Execute actions
             const result = await e.actions.execute(context);
             // Once

@@ -60,6 +60,7 @@ class App {
         let gui = new GuiGameWindow(this._container, textEngine,
                                     this._gameEngine, guiDef);
         this._actionProxy.attachGui(gui);
+        this._trackBalanceMetrics();
         this._gameEngine.onGameEnd = (sender, event) => {
             window.dispatchEvent(new CustomEvent('gameEnd', {
                 detail: {
@@ -69,10 +70,9 @@ class App {
             }));
             // Fires when the ending is decided, before its message shows.
             this._showShareButton(event.state, event.endingType);
-            (window as any).goatcounter?.count?.({
-                path: 'ending/' + event.endingType,
-                event: true
-            });
+            track('ending/' + event.endingType);
+            track(`ending/${event.endingType}/${weekBucket(
+                this._gameEngine.variableStore.getVar('elapsedWeek', false) ?? 0)}`);
         };
         await this._gameEngine.start(false);
         // Debugging info for translation keys
@@ -85,6 +85,44 @@ class App {
         };
         gameLoop();
         this._started = true;
+    }
+
+    // Fire-and-forget GoatCounter events for balance tuning: which choices
+    // players pick, which events fire, and how far runs get.
+    private _trackBalanceMetrics(): void {
+        const engine = this._gameEngine;
+        this._actionProxy.onChoice = (message, choice) =>
+            track(`choice/${message}/${choice}`);
+        engine.eventEngine.onEventExecuted = (id) => track('event/' + id);
+        // Milestones fire once per run. Each run's set is dropped on reset,
+        // which the engine does by clearing the variable store on start.
+        let seen = new Set<string>();
+        const milestone = (path: string) => {
+            if (seen.has(path)) return;
+            seen.add(path);
+            track('milestone/' + path);
+        };
+        // The GUI owns these single-slot handlers; chain onto them.
+        const statuses = engine.statusTable;
+        const prevStatus = statuses.onChanged;
+        statuses.onChanged = (sender, e) => {
+            prevStatus?.(sender, e);
+            if (!e.clear && e.item && e.oldCount === 0) milestone('status/' + e.item.id);
+        };
+        const vars = engine.variableStore;
+        const prevVar = vars.onVariableChanged;
+        vars.onVariableChanged = (sender, e) => {
+            prevVar?.(sender, e);
+            if (e.clear) {
+                seen = new Set();
+            } else if (e.varName === 'server.members') {
+                for (const [n, label] of MEMBER_MILESTONES) {
+                    if (e.newValue >= n) milestone('members/' + label);
+                }
+            } else if (e.varName === 'year' && e.newValue > 1) {
+                milestone('year/' + e.newValue);
+            }
+        };
     }
 
     private _showShareButton(state: EndGameState, endingType: string): void {
@@ -192,6 +230,24 @@ class App {
             console.log(`# Unnecessary translation keys (${unnecessaryKeys.length}):\n${unnecessaryKeys.join('\n')}`);
         }
     }
+}
+
+const MEMBER_MILESTONES: Array<[number, string]> =
+    [[2_000, '2k'], [10_000, '10k'], [100_000, '100k'], [1_000_000, '1m']];
+
+// Skip local test runs so they don't pollute the production numbers.
+const TRACKING_ENABLED = !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+
+function track(path: string): void {
+    if (!TRACKING_ENABLED) return;
+    (window as any).goatcounter?.count?.({ path, event: true });
+}
+
+function weekBucket(week: number): string {
+    if (week <= 25) return 'w0-25';
+    if (week <= 52) return 'w26-52';
+    if (week <= 104) return 'w53-104';
+    return 'w105+';
 }
 
 // ponytail: mirrors raritySpecificStyles in gui.yaml and the r_* colors in

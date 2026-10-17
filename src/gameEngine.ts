@@ -293,6 +293,12 @@ export class GameActionProxy implements GuiActionProxy {
 
     private _guiGame: GuiGame | undefined;
 
+    /**
+     * Called with the message key and the chosen choice key after the player
+     * picks a choice.
+     */
+    onChoice?: (message: string, choice: string) => void;
+
     attachGui(gui: GuiGame): void {
         this._guiGame = gui;
     }
@@ -304,7 +310,11 @@ export class GameActionProxy implements GuiActionProxy {
 
     displayChoices(message: string, choices: Array<[string, number]>, icon?: string): Promise<number> {
         if (!this._guiGame) throw new Error('No attached GUI.');
-        return this._guiGame.displayChoices(message, choices, icon);
+        return this._guiGame.displayChoices(message, choices, icon).then((choiceId) => {
+            const picked = choices.find(([, id]) => id === choiceId);
+            if (picked) this.onChoice?.(message, picked[0]);
+            return choiceId;
+        });
     }
 
 }
